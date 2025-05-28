@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect } from "react";
-import Header from "@/app/components/Header";
-import Chat from "@/app/components/Chat";
+import Header from "./components/Header";
+import Chat from "./components/Chat";
 import "./globals.css";
 
 const Page: React.FC = () => {
