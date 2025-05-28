@@ -1,22 +1,36 @@
+"use client";
+
 import { Message } from "ai";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 export default function Messages({ messages }: { messages: Message[] }) {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  if (messages.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center text-gray-400">
+          <p>Start a conversation with PATHWAYAI</p>
+          <p className="text-sm mt-2 text-gray-500">The AI assistant that helps you find your way</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="border-2 border-gray-600 p-6 rounded-lg overflow-y-scroll flex-grow flex flex-col justify-end bg-gray-700">
+    <div className="space-y-4 py-2">
       {messages.map((msg, index) => (
         <div
           key={index}
-          className={`${
-            msg.role === "assistant" ? "text-green-300" : "text-blue-300"
-          } my-2 p-3 rounded shadow-md hover:shadow-lg transition-shadow duration-200 flex slide-in-bottom bg-gray-800 border border-gray-600 message-glow`}
+          className={`flex ${msg.role === "assistant" ? "justify-start" : "justify-end"}`}
         >
-          <div className="rounded-tl-lg bg-gray-800 p-2 border-r border-gray-600 flex items-center">
-            {msg.role === "assistant" ? "🤖" : "🧑‍💻"}
-          </div>
-          <div className="ml-2 flex items-center text-gray-200">
-            {msg.content}
+          <div className={`message ${msg.role}`}>
+            <div className="whitespace-pre-wrap">{msg.content}</div>
           </div>
         </div>
       ))}

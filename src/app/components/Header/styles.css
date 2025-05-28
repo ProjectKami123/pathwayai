@@ -1,0 +1,26 @@
+.header-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 0;
+  width: 100%;
+}
+
+.shimmer-text {
+  background: linear-gradient(90deg, #00f, #0ff, #00f) -100% / 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 900;
+  font-size: clamp(2rem, 8vw, 5rem);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  animation: shimmer 2s linear infinite;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+@keyframes shimmer {
+  to { 
+    background-position: 100% 0;
+  }
+}

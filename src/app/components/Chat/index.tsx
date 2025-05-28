@@ -1,27 +1,31 @@
-// Chat.tsx
+"use client";
 
-import React, { FormEvent, ChangeEvent } from "react";
+import React, { FormEvent } from "react";
+import { useChat } from "ai/react";
+import AIBot from "../AIBot";
+import "./chatStyles.css";
 import Messages from "./Messages";
-import { Message, useChat } from "ai/react";
 
 const Chat: React.FC = () => {
   const { messages, input, handleInputChange, handleSubmit } = useChat();
 
   return (
-    <div id="chat" className="flex flex-col w-full max-w-4xl mx-auto px-4">
-      <Messages messages={messages} />
-      <form
-        onSubmit={handleSubmit}
-        className="mt-5 mb-5"
-      >
-        <input
-          type="text"
-          className="w-full p-2 rounded bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:border-blue-500"
-          value={input}
-          onChange={handleInputChange}
-          placeholder="Type your message..."
-        />
-      </form>
+    <div className="chat-container">
+      <div className="chat-inner">
+        <AIBot />
+        <div className="messages-container">
+          <Messages messages={messages} />
+        </div>
+        <form onSubmit={handleSubmit} className="chat-input-container">
+          <input
+            type="text"
+            className="chat-input"
+            value={input}
+            onChange={handleInputChange}
+            placeholder="Type your message..."
+          />
+        </form>
+      </div>
     </div>
   );
 };
