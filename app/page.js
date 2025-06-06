@@ -232,32 +232,34 @@ export default function ChatPage() {
 
         {/* Input Form */}
         <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 p-6">
-          <div className="flex space-x-4">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me anything about Aussie careers, visas, or salaries... 💬"
-              className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm placeholder-gray-500"
-              disabled={isLoading}
-            />
-            <button
-              type="button"
-              onClick={handleSurpriseMe}
-              disabled={isLoading}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              title="Surprise Me!"
-            >
-              🎲
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              {isLoading ? '⏳ Thinking...' : '🚀 Send'}
-            </button>
-          </div>
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+  <input
+    type="text"
+    value={input}
+    onChange={(e) => setInput(e.target.value)}
+    placeholder="Ask me anything about Aussie careers, visas, or salaries... 💬"
+    className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm placeholder-gray-500"
+    disabled={isLoading}
+  />
+  <div className="flex space-x-2">
+    <button
+      type="button"
+      onClick={handleSurpriseMe}
+      disabled={isLoading}
+      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+      title="Surprise Me!"
+    >
+      🎲
+    </button>
+    <button
+      type="submit"
+      disabled={isLoading || !input.trim()}
+      className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+    >
+      {isLoading ? '⏳ Thinking...' : '🚀 Send'}
+    </button>
+  </div>
+</div>
           
           {/* Quick suggestions */}
           <div className="mt-4 space-y-3">
