@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import SidePanel from '@/components/sidepanel';
 
 // Updated example questions
 const EXAMPLE_QUESTIONS = [
@@ -35,7 +36,8 @@ export default function ChatPage() {
 
   // Set a random example question on mount
   useEffect(() => {
-    setRandomExample();
+    const randomIndex = Math.floor(Math.random() * EXAMPLE_QUESTIONS.length);
+    setInput(EXAMPLE_QUESTIONS[randomIndex]);
   }, []);
 
   // Set a random example question
@@ -56,9 +58,8 @@ export default function ChatPage() {
 
   // Handle dice button click
   const handleDiceClick = () => {
-    const randomIndex = Math.floor(Math.random() * OCCUPATION_QUERIES.length);
-    const randomQuery = OCCUPATION_QUERIES[randomIndex];
-    setInput(randomQuery);
+    const randomIndex = Math.floor(Math.random() * EXAMPLE_QUESTIONS.length);
+    setInput(EXAMPLE_QUESTIONS[randomIndex]);
     inputRef.current.focus();
   };
 
@@ -127,107 +128,91 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      {/* Minimal Header */}
-      <div className="px-4 py-3 border-b border-gray-100">
-        <h1 className="text-xl font-medium text-gray-800">PathwayAI</h1>
+    <div className="flex flex-col md:flex-row min-h-screen bg-white">
+      {/* SidePanel */}
+      <div className="hidden md:block w-64 border-gray-200 focus:outline-none">
+        <SidePanel />
       </div>
-
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 max-w-4xl w-full mx-auto">
-        <div className="space-y-4">
+      
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col max-w-4xl w-full mx-auto focus:outline-none">
+        {/* Chat messages */}
+        <div className="flex-1 overflow-y-auto p-6">
           {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            <div 
+              key={index} 
+              className={`mb-4 p-4 rounded-lg ${
+                message.role === 'user' 
+                  ? 'bg-blue-100 text-blue-900 ml-auto max-w-3xl' 
+                  : 'bg-white shadow-md max-w-3xl'
+              }`}
             >
-              <div className={`flex items-start space-x-3 max-w-3xl ${
-                message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-              }`}>
-                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-lg ${
-                  message.role === 'user' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-green-500 text-white'
-                }`}>
-                  {message.role === 'user' ? '👤' : '🤖'}
-                </div>
-                <div
-                  className={`rounded-2xl p-4 ${
-                    message.role === 'user'
-                      ? 'bg-blue-500 text-white'
-                      : message.error
-                      ? 'bg-red-50 text-red-800 border-2 border-red-200'
-                      : 'bg-gray-50 text-gray-800'
-                  }`}
-                >
-                  <div className="whitespace-pre-wrap leading-relaxed">{message.content}</div>
-                </div>
-              </div>
+              {message.content}
             </div>
           ))}
           <div ref={messagesEndRef} />
         </div>
-      </div>
 
-      {/* Fixed Input Area */}
-      <div className="sticky bottom-0 bg-white/80 backdrop-blur-sm border-t border-gray-100">
-        <div className="max-w-3xl mx-auto px-4 py-4 w-full">
-          <form 
-            onSubmit={handleSubmit} 
-            className="relative flex flex-col rounded-xl border-2 border-gray-200 bg-white shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 max-w-3xl w-full mx-auto"
-          >
-            <div className="relative">
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={`${exampleQuestion} (Tab)`}
-                className="w-full border-0 focus:ring-0 rounded-t-xl py-3 pl-4 pr-16 focus:outline-none"
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => input.trim() && handleSubmit({ preventDefault: () => {} })}
-                disabled={isLoading || !input.trim()}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 rotate-180 p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Send (Enter)"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 rotate-90" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-            
-            {/* Buttons row */}
-            <div className="flex items-center px-3 py-2 bg-white rounded-b-xl">
-              <button
-                type="button"
-                onClick={handleDiceClick}
-                className="flex items-center text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
-                title="Random occupation"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M11.17 6.764l.528-1.554h.161c.532 0 .954.227 1.141.563.145.266.195.466.195.756 0 .453-.268.792-.81.792h-1.214v-1.559z" />
-                  <path d="M4.5 3h11c.563 0 1.017.476 1.017 1.063 0 .586-.454 1.062-1.017 1.062h-11c-.563 0-1.017-.476-1.017-1.062 0-.587.454-1.063 1.017-1.063z" />
-                  <path d="M6.5 5a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M5.5 10.5a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M17.5 14.5a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M14.5 18.5a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M8.5 16.5a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M3.5 12.5a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M11.5 8.5a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M15.5 12.5a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M12.5 16.5a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M6.5 18.5a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M2.5 14.5a1 1 0 100-2 1 1 0 000 2z" />
-                  <path d="M8.5 8.5a1 1 0 100-2 1 1 0 000 2z" />
-                </svg>
-                Random Job
-              </button>
-            </div>
-          </form>
+        {/* Input area */}
+        <div className="sticky bottom-0 bg-white/80 backdrop-blur-sm border-t border-gray-100">
+          <div className="max-w-3xl mx-auto px-4 py-4 w-full">
+            <form 
+              onSubmit={handleSubmit} 
+              className="relative flex flex-col rounded-xl border-2 border-gray-200 bg-white shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 max-w-3xl w-full mx-auto"
+            >
+              <div className="relative">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={`${exampleQuestion} (Tab)`}
+                  className="w-full border-0 focus:ring-0 rounded-t-xl py-3 pl-4 pr-16 focus:outline-none"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => input.trim() && handleSubmit({ preventDefault: () => {} })}
+                  disabled={isLoading || !input.trim()}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 rotate-180 p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Send (Enter)"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 rotate-90" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Buttons row */}
+              <div className="flex items-center px-3 py-2 bg-white rounded-b-xl">
+                <button
+                  type="button"
+                  onClick={handleDiceClick}
+                  className="flex items-center text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                  title="Random occupation"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M11.17 6.764l.528-1.554h.161c.532 0 .954.227 1.141.563.145.266.195.466.195.756 0 .453-.268.792-.81.792h-1.214v-1.559z" />
+                    <path d="M4.5 3h11c.563 0 1.017.476 1.017 1.063 0 .586-.454 1.062-1.017 1.062h-11c-.563 0-1.017-.476-1.017-1.062 0-.587.454-1.063 1.017-1.063z" />
+                    <path d="M6.5 5a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M5.5 10.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M17.5 14.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M14.5 18.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M8.5 16.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M3.5 12.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M11.5 8.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M15.5 12.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M12.5 16.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M6.5 18.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M2.5 14.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path d="M8.5 8.5a1 1 0 100-2 1 1 0 000 2z" />
+                  </svg>
+                  Random Job
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
