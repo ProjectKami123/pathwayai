@@ -2,85 +2,67 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-// Extended list of engaging questions for young adults
-const SUGGESTION_QUESTIONS = [
-  "What jobs are on the MLTSSL?",
-  "Software engineer visa eligibility",
-  "Highest paying occupations in IT",
-  "Jobs available in Queensland",
-  "Which trades are in demand?",
-  "Best paying jobs for graduates",
-  "Creative industry opportunities",
-  "Healthcare jobs with good prospects",
-  "Remote work friendly occupations",
-  "Jobs that don't require uni degrees",
-  "What's hot in cybersecurity?",
-  "Teaching jobs across Australia",
-  "Finance sector career paths",
-  "Environmental jobs and salaries",
-  "Digital marketing opportunities",
-  "Gaming industry careers",
-  "Social media related jobs",
-  "Data science career options",
-  "UX/UI designer prospects",
-  "Renewable energy job market",
-  "Food industry opportunities",
-  "Tourism and hospitality careers",
-  "Sport and fitness jobs",
-  "Mental health career paths",
-  "AI and machine learning jobs"
+// Updated example questions
+const EXAMPLE_QUESTIONS = [
+  "What are the visa options for software engineers in Australia?",
+  "Tell me about healthcare jobs with good growth potential",
+  "How do I become a cybersecurity specialist in Australia?",
+  "What are the highest paying jobs in the IT sector?",
+  "Can you explain the skilled migration process for nurses?"
 ];
 
-// Random occupation queries for "Surprise Me" feature
-const SURPRISE_QUERIES = [
-  "Tell me about being a UX Designer",
-  "What's it like working as a Data Scientist?",
-  "Show me Software Engineer opportunities",
-  "What about Cybersecurity Specialist roles?",
-  "Tell me about Digital Marketing careers",
-  "What's the deal with being a Nurse?",
-  "Show me Teacher opportunities",
-  "What about Chef and cooking careers?",
-  "Tell me about Psychologist roles",
-  "What's it like being a Physiotherapist?",
-  "Show me Mechanical Engineer jobs",
-  "What about Social Worker positions?",
-  "Tell me about being a Graphic Designer",
-  "What's the scoop on Marketing roles?",
-  "Show me Environmental Scientist jobs"
+// Random occupation queries
+const OCCUPATION_QUERIES = [
+  "Tell me about being a Data Scientist in Australia",
+  "What's the job market like for Electricians?",
+  "Show me career paths for Civil Engineers",
+  "What skills do I need to be a UX Designer?",
+  "Tell me about salary expectations for Teachers"
 ];
 
 export default function ChatPage() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Hey there! 👋 I\'m your AI career buddy for all things Australian jobs and visas. Whether you\'re wondering about visa pathways, salary expectations, or what skills you need - I\'ve got you covered! What\'s on your mind?'
+      content: 'Hi there! I\'m your AI career advisor. Ask me anything about jobs, careers, or working in Australia.'
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [currentSuggestions, setCurrentSuggestions] = useState([]);
+  const [exampleQuestion, setExampleQuestion] = useState('');
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
-  // Generate 4 random suggestions on component mount and when refreshed
+  // Set a random example question on mount
   useEffect(() => {
-    const getRandomSuggestions = () => {
-      const shuffled = [...SUGGESTION_QUESTIONS].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, 4);
-    };
-    setCurrentSuggestions(getRandomSuggestions());
+    setRandomExample();
   }, []);
 
-  const refreshSuggestions = () => {
-    const shuffled = [...SUGGESTION_QUESTIONS].sort(() => 0.5 - Math.random());
-    setCurrentSuggestions(shuffled.slice(0, 4));
+  // Set a random example question
+  const setRandomExample = () => {
+    const randomIndex = Math.floor(Math.random() * EXAMPLE_QUESTIONS.length);
+    setExampleQuestion(EXAMPLE_QUESTIONS[randomIndex]);
   };
 
-  const handleSurpriseMe = () => {
-    const randomQuery = SURPRISE_QUERIES[Math.floor(Math.random() * SURPRISE_QUERIES.length)];
+  // Handle tab key to autofill example
+  const handleKeyDown = (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (input === '') {
+        setInput(exampleQuestion);
+      }
+    }
+  };
+
+  // Handle dice button click
+  const handleDiceClick = () => {
+    const randomIndex = Math.floor(Math.random() * OCCUPATION_QUERIES.length);
+    const randomQuery = OCCUPATION_QUERIES[randomIndex];
     setInput(randomQuery);
+    inputRef.current.focus();
   };
 
+  // Scroll to bottom when messages change
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -140,154 +122,113 @@ export default function ChatPage() {
       ]);
     } finally {
       setIsLoading(false);
+      setRandomExample(); // Get a new example question after submission
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-6 shadow-lg">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-            🇦🇺 Aussie Career Hub
-          </h1>
-          <p className="text-blue-100 mt-2 text-lg">Your AI-powered guide to Australian careers & visas ✨</p>
-        </div>
+    <div className="flex flex-col min-h-screen bg-white">
+      {/* Minimal Header */}
+      <div className="px-4 py-3 border-b border-gray-100">
+        <h1 className="text-xl font-medium text-gray-800">PathwayAI</h1>
       </div>
 
-      {/* Chat Container */}
-      <div className="max-w-4xl mx-auto p-6 h-[calc(100vh-200px)] flex flex-col">
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto mb-6 space-y-6">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 max-w-4xl w-full mx-auto">
+        <div className="space-y-4">
           {messages.map((message, index) => (
             <div
               key={index}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`flex items-start space-x-3 max-w-3xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                {/* Avatar */}
-                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+              <div className={`flex items-start space-x-3 max-w-3xl ${
+                message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+              }`}>
+                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-lg ${
                   message.role === 'user' 
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' 
-                    : 'bg-gradient-to-r from-green-400 to-blue-500 text-white'
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-green-500 text-white'
                 }`}>
                   {message.role === 'user' ? '👤' : '🤖'}
                 </div>
-                
-                {/* Message Bubble */}
                 <div
-                  className={`rounded-2xl p-4 shadow-lg backdrop-blur-sm ${
+                  className={`rounded-2xl p-4 ${
                     message.role === 'user'
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                      ? 'bg-blue-500 text-white'
                       : message.error
                       ? 'bg-red-50 text-red-800 border-2 border-red-200'
-                      : 'bg-white/80 text-gray-800 border border-gray-200'
+                      : 'bg-gray-50 text-gray-800'
                   }`}
                 >
                   <div className="whitespace-pre-wrap leading-relaxed">{message.content}</div>
-                  
-                  {/* Show metadata for assistant responses */}
-                  {message.role === 'assistant' && message.metadata && (
-                    <div className="mt-4 pt-3 border-t border-gray-200/50">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                          📊 {message.metadata.matches} matches
-                        </span>
-                        {message.metadata.relevantData?.length > 0 && (
-                          <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                            ✨ {message.metadata.relevantData.length} relevant jobs
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
           ))}
-
-          {/* Loading indicator */}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="flex items-start space-x-3 max-w-3xl">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center text-lg text-white">
-                  🤖
-                </div>
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-gray-200">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                    <span className="text-gray-600 text-sm font-medium">Searching my brain... 🧠</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          
           <div ref={messagesEndRef} />
         </div>
+      </div>
 
-        {/* Input Form */}
-        <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 p-6">
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-  <input
-    type="text"
-    value={input}
-    onChange={(e) => setInput(e.target.value)}
-    placeholder="Ask me anything about Aussie careers, visas, or salaries... 💬"
-    className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm placeholder-gray-500"
-    disabled={isLoading}
-  />
-  <div className="flex space-x-2">
-    <button
-      type="button"
-      onClick={handleSurpriseMe}
-      disabled={isLoading}
-      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-      title="Surprise Me!"
-    >
-      🎲
-    </button>
-    <button
-      type="submit"
-      disabled={isLoading || !input.trim()}
-      className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-    >
-      {isLoading ? '⏳ Thinking...' : '🚀 Send'}
-    </button>
-  </div>
-</div>
-          
-          {/* Quick suggestions */}
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">💡 Try asking:</span>
+      {/* Fixed Input Area */}
+      <div className="sticky bottom-0 bg-white/80 backdrop-blur-sm border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 py-4 w-full">
+          <form 
+            onSubmit={handleSubmit} 
+            className="relative flex flex-col rounded-xl border-2 border-gray-200 bg-white shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 max-w-3xl w-full mx-auto"
+          >
+            <div className="relative">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={`${exampleQuestion} (Tab)`}
+                className="w-full border-0 focus:ring-0 rounded-t-xl py-3 pl-4 pr-16 focus:outline-none"
+                disabled={isLoading}
+              />
               <button
                 type="button"
-                onClick={refreshSuggestions}
-                className="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                onClick={() => input.trim() && handleSubmit({ preventDefault: () => {} })}
+                disabled={isLoading || !input.trim()}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 rotate-180 p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Send (Enter)"
               >
-                🔄 More ideas
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 rotate-90" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                </svg>
               </button>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {currentSuggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => setInput(suggestion)}
-                  disabled={isLoading}
-                  className="text-sm bg-gradient-to-r from-gray-100 to-gray-200 hover:from-blue-100 hover:to-indigo-100 text-gray-700 hover:text-blue-800 px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 border border-gray-200 hover:border-blue-300 transform hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  {suggestion}
-                </button>
-              ))}
+            
+            {/* Buttons row */}
+            <div className="flex items-center px-3 py-2 bg-white rounded-b-xl">
+              <button
+                type="button"
+                onClick={handleDiceClick}
+                className="flex items-center text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                title="Random occupation"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M11.17 6.764l.528-1.554h.161c.532 0 .954.227 1.141.563.145.266.195.466.195.756 0 .453-.268.792-.81.792h-1.214v-1.559z" />
+                  <path d="M4.5 3h11c.563 0 1.017.476 1.017 1.063 0 .586-.454 1.062-1.017 1.062h-11c-.563 0-1.017-.476-1.017-1.062 0-.587.454-1.063 1.017-1.063z" />
+                  <path d="M6.5 5a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M5.5 10.5a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M17.5 14.5a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M14.5 18.5a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M8.5 16.5a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M3.5 12.5a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M11.5 8.5a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M15.5 12.5a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M12.5 16.5a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M6.5 18.5a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M2.5 14.5a1 1 0 100-2 1 1 0 000 2z" />
+                  <path d="M8.5 8.5a1 1 0 100-2 1 1 0 000 2z" />
+                </svg>
+                Random Job
+              </button>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
