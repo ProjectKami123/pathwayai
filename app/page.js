@@ -9,8 +9,8 @@ const EXAMPLE_QUESTIONS = [
   "Tell me about healthcare jobs with good growth potential",
   "How do I become a cybersecurity specialist in Australia?",
   "What are the highest paying jobs in the IT sector?",
-  "Can you explain the skilled migration process for nurses?"
-  "Tell me about being a Data Scientist in Australia",
+  "Can you explain the skilled migration process for nurses?",
+  "Tell me about being a Data Scientist in Australia?",
   "What's the job market like for Electricians?",
   "Show me career paths for Civil Engineers",
   "What skills do I need to be a UX Designer?",
