@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 // --- Firebase Configuration ---
