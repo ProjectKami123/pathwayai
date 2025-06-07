@@ -10,16 +10,14 @@ const EXAMPLE_QUESTIONS = [
   "How do I become a cybersecurity specialist in Australia?",
   "What are the highest paying jobs in the IT sector?",
   "Can you explain the skilled migration process for nurses?"
-];
-
-// Random occupation queries
-const OCCUPATION_QUERIES = [
   "Tell me about being a Data Scientist in Australia",
   "What's the job market like for Electricians?",
   "Show me career paths for Civil Engineers",
   "What skills do I need to be a UX Designer?",
   "Tell me about salary expectations for Teachers"
 ];
+
+
 
 export default function ChatPage() {
   const [messages, setMessages] = useState([
