@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import SidePanel from '@/components/sidepanel';
+import { auth } from '../lib/firebase'; // Import shared auth instance
 
 // Updated example questions
 const EXAMPLE_QUESTIONS = [
@@ -35,8 +36,16 @@ export default function ChatPage() {
   // Set a random example question on mount
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * EXAMPLE_QUESTIONS.length);
-    setInput(EXAMPLE_QUESTIONS[randomIndex]);
+    setExampleQuestion(EXAMPLE_QUESTIONS[randomIndex]); // ← show suggestion only
   }, []);
+
+  // Make auth available in browser console for debugging
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.auth = auth;
+      console.log('Firebase auth object is now available in the console as `window.auth`');
+    }
+  }, []); // Runs once on component mount
 
   // Set a random example question
   const setRandomExample = () => {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase'; // Assumes firebase.js is located in lib/firebase.js
 
-export default function ProfileForm({ user }) {
+export default function ProfileForm({ user, children }) {
   const [formData, setFormData] = useState({
     fullName: '',
     email: user?.email || '',
@@ -106,7 +106,7 @@ export default function ProfileForm({ user }) {
             workExperience: profileData.workExperience || [],
             education: profileData.education || [],
             certifications: profileData.certifications || [],
-
+            
             willingToRelocate: typeof profileData.willingToRelocate === 'boolean'
               ? (profileData.willingToRelocate ? 'Yes' : 'No')
               : profileData.willingToRelocate || 'No',
@@ -212,18 +212,21 @@ export default function ProfileForm({ user }) {
                 newErrors[`education.${index}.startDate`] = 'Start Date cannot be in the future';
             }
           }
-          if (edu.endDate !== 'Present') { // Assuming 'Present' for education also
-              if (!edu.endDate?.trim()) {
-                  newErrors[`education.${index}.endDate`] = 'End Date is required or select Expected';
-              } else {
-                  const endDate = new Date(edu.endDate);
-                  if (endDate > today) {
-                      newErrors[`education.${index}.endDate`] = 'End Date cannot be in the future';
-                  }
-                  if (edu.startDate && new Date(edu.startDate) > endDate) {
-                      newErrors[`education.${index}.endDate`] = 'End Date cannot be before Start Date';
-                  }
+          if (edu.endDate === 'Present') {
+            // Clear any existing end date errors when 'Present' is selected
+            delete newErrors[`education.${index}.endDate`];
+          } else {
+            if (!edu.endDate?.trim()) {
+              newErrors[`education.${index}.endDate`] = 'End Date is required or select Expected';
+            } else {
+              const endDate = new Date(edu.endDate);
+              if (endDate > today) {
+                newErrors[`education.${index}.endDate`] = 'End Date cannot be in the future';
               }
+              if (edu.startDate && new Date(edu.startDate) > endDate) {
+                newErrors[`education.${index}.endDate`] = 'End Date cannot be before Start Date';
+              }
+            }
           }
         });
         break;
@@ -240,6 +243,8 @@ export default function ProfileForm({ user }) {
                 newErrors[`certifications.${index}.year`] = 'Year must be a 4-digit number';
             } else if (certYear > currentYear) {
                 newErrors[`certifications.${index}.year`] = 'Year cannot be in the future';
+            } else if (certYear < 1900) {
+                newErrors[`certifications.${index}.year`] = 'Year must be after 1900';
             }
           }
         });
@@ -256,6 +261,36 @@ export default function ProfileForm({ user }) {
 
     if (type === 'radio') {
       newValue = checked ? value : formData[name];
+    }
+
+    // Validate certification year in real-time
+    if (name.startsWith('certifications.') && name.endsWith('.year') && newValue) {
+      const currentYear = new Date().getFullYear();
+      const certYear = parseInt(newValue);
+      
+      // Clear any existing error for this field
+      if (errors[name]) {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[name];
+          return newErrors;
+        });
+      }
+
+      // Validate year format and range
+      if (isNaN(certYear) || String(certYear).length !== 4) {
+        setErrors(prev => ({
+          ...prev,
+          [name]: 'Please enter a valid 4-digit year'
+        }));
+        return;
+      } else if (certYear < 1900 || certYear > currentYear) {
+        setErrors(prev => ({
+          ...prev,
+          [name]: `Year must be between 1900 and ${currentYear}`
+        }));
+        return;
+      }
     }
 
     if (errors[name]) {
@@ -591,18 +626,21 @@ export default function ProfileForm({ user }) {
                     stepErrors[`education.${index}.startDate`] = 'Start Date cannot be in the future';
                 }
               }
-              if (edu.endDate !== 'Present') {
-                  if (!edu.endDate?.trim()) {
-                      stepErrors[`education.${index}.endDate`] = 'End Date is required or select Expected';
-                  } else {
-                      const endDate = new Date(edu.endDate);
-                      if (endDate > today) {
-                          stepErrors[`education.${index}.endDate`] = 'End Date cannot be in the future';
-                      }
-                      if (edu.startDate && new Date(edu.startDate) > endDate) {
-                          stepErrors[`education.${index}.endDate`] = 'End Date cannot be before Start Date';
-                      }
+              if (edu.endDate === 'Present') {
+                // Clear any existing end date errors when 'Present' is selected
+                delete stepErrors[`education.${index}.endDate`];
+              } else {
+                if (!edu.endDate?.trim()) {
+                  stepErrors[`education.${index}.endDate`] = 'End Date is required or select Expected';
+                } else {
+                  const endDate = new Date(edu.endDate);
+                  if (endDate > today) {
+                    stepErrors[`education.${index}.endDate`] = 'End Date cannot be in the future';
                   }
+                  if (edu.startDate && new Date(edu.startDate) > endDate) {
+                    stepErrors[`education.${index}.endDate`] = 'End Date cannot be before Start Date';
+                  }
+                }
               }
             });
             break;
@@ -619,6 +657,8 @@ export default function ProfileForm({ user }) {
                     stepErrors[`certifications.${index}.year`] = 'Year must be a 4-digit number';
                 } else if (certYear > currentYear) {
                     stepErrors[`certifications.${index}.year`] = 'Year cannot be in the future';
+                } else if (certYear < 1900) {
+                    stepErrors[`certifications.${index}.year`] = 'Year must be after 1900';
                 }
               }
             });
@@ -790,8 +830,8 @@ export default function ProfileForm({ user }) {
                           <InputField label="Company" name={`workExperience.${roleIndex}.company`} value={role.company} readOnly={true} />
                           <InputField label="Location (City, State)" name={`workExperience.${roleIndex}.location`} value={role.location} readOnly={true} />
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InputField label="Start Date (YYYY-MM-DD)" name={`workExperience.${roleIndex}.startDate`} type="date" value={role.startDate} readOnly={true} />
-                            <InputField label="End Date (YYYY-MM-DD) or 'Present'" name={`workExperience.${roleIndex}.endDate`} type="date" value={role.endDate} readOnly={true} dateFieldType="work" />
+                            <InputField label="Start Date" name={`workExperience.${roleIndex}.startDate`} type="date" value={role.startDate} readOnly={true} />
+                            <InputField label="End Date" name={`workExperience.${roleIndex}.endDate`} type="date" value={role.endDate} readOnly={true} dateFieldType="work" />
                           </div>
                           <TextareaField label="Key Responsibilities / Achievements" name={`workExperience.${roleIndex}.summary`} value={role.summary} rows={4} readOnly={true} />
                         </div>
@@ -811,8 +851,22 @@ export default function ProfileForm({ user }) {
                           <InputField label="Institution Name" name={`education.${eduIndex}.institution`} value={edu.institution} readOnly={true} />
                           <InputField label="Location (Optional)" name={`education.${eduIndex}.location`} value={edu.location} readOnly={true} />
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InputField label="Start Date (YYYY-MM-DD)" name={`education.${eduIndex}.startDate`} type="date" value={edu.startDate} readOnly={true} />
-                            <InputField label="End Date (YYYY-MM-DD) or 'Expected'" name={`education.${eduIndex}.endDate`} type="date" value={edu.endDate} readOnly={true} dateFieldType="education" />
+                            <InputField label="Start Date" name={`education.${eduIndex}.startDate`} type="date" value={edu.startDate} readOnly={true} />
+                            <div className="flex items-end">
+                              <InputField 
+                                label="End Date" 
+                                name={`education.${eduIndex}.endDate`} 
+                                type="date" 
+                                value={edu.endDate} 
+                                readOnly={true} 
+                                className="flex-grow" 
+                                dateFieldType="education" 
+                                max={new Date().toISOString().split('T')[0]} // Prevent future dates
+                              />
+                              {edu.endDate === 'Present' && (
+                                <button type="button" onClick={() => {}} className="ml-2 px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Present</button>
+                              )}
+                            </div>
                           </div>
                           <InputField label="Honours / Distinctions (Optional)" name={`education.${eduIndex}.honors`} value={edu.honors} readOnly={true} />
                         </div>
@@ -826,7 +880,7 @@ export default function ProfileForm({ user }) {
                           <p className="text-gray-500 italic mb-4">No certifications added yet.</p>
                       )}
                       {formData.certifications.map((cert, certIndex) => (
-                        <div key={certIndex} className="space-y-4 border border-gray-200 p-4 rounded-md relative bg-gray-50">
+                        <div key={certIndex} className="space-y-4 border border-gray-200 p-4 rounded-md mb-4 relative bg-gray-50">
                           <h3 className="text-lg font-medium text-gray-700 mb-3">Certification {certIndex + 1}</h3>
                           <InputField label="Certification Name" name={`certifications.${certIndex}.name`} value={cert.name} readOnly={true} />
                           <InputField label="Issuer" name={`certifications.${certIndex}.issuer`} value={cert.issuer} readOnly={true} />
@@ -920,11 +974,11 @@ export default function ProfileForm({ user }) {
                             <InputField label="Company" name={`workExperience.${index}.company`} value={role.company} onChange={handleChange} error={errors[`workExperience.${index}.company`]} required readOnly={!isEditMode} />
                             <InputField label="Location (City, State)" name={`workExperience.${index}.location`} value={role.location} onChange={handleChange} error={errors[`workExperience.${index}.location`]} required readOnly={!isEditMode} />
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <InputField label="Start Date (YYYY-MM-DD)" name={`workExperience.${index}.startDate`} type="date" value={role.startDate} onChange={handleChange} error={errors[`workExperience.${index}.startDate`]} required readOnly={!isEditMode} />
+                              <InputField label="Start Date" name={`workExperience.${index}.startDate`} type="date" value={role.startDate} onChange={handleChange} error={errors[`workExperience.${index}.startDate`]} required readOnly={!isEditMode} />
                               <div className="flex items-end">
-                                <InputField label="End Date (YYYY-MM-DD) or 'Present'" name={`workExperience.${index}.endDate`} type="date" value={role.endDate} onChange={handleChange} error={errors[`workExperience.${index}.endDate`]} readOnly={!isEditMode} className="flex-grow" dateFieldType="work" />
+                                <InputField label="End Date" name={`workExperience.${index}.endDate`} type="date" value={role.endDate} onChange={handleChange} error={errors[`workExperience.${index}.endDate`]} readOnly={!isEditMode} className="flex-grow" dateFieldType="work" />
                                 {isEditMode && role.endDate !== 'Present' && (
-                                    <button type="button" onClick={() => handleChange({ target: { name: `workExperience.${index}.endDate`, value: 'Present' }})} className="ml-2 px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Present</button>
+                                  <button type="button" onClick={() => handleChange({ target: { name: `workExperience.${index}.endDate`, value: 'Present' }})} className="ml-2 px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Present</button>
                                 )}
                               </div>
                             </div>
@@ -963,11 +1017,67 @@ export default function ProfileForm({ user }) {
                             <InputField label="Institution Name" name={`education.${eduIndex}.institution`} value={edu.institution} onChange={handleChange} error={errors[`education.${eduIndex}.institution`]} readOnly={!isEditMode} />
                             <InputField label="Location (Optional)" name={`education.${eduIndex}.location`} value={edu.location} onChange={handleChange} error={errors[`education.${eduIndex}.location`]} readOnly={!isEditMode} />
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <InputField label="Start Date (YYYY-MM-DD)" name={`education.${eduIndex}.startDate`} type="date" value={edu.startDate} onChange={handleChange} error={errors[`education.${eduIndex}.startDate`]} readOnly={!isEditMode} />
+                              <InputField label="Start Date" name={`education.${eduIndex}.startDate`} type="date" value={edu.startDate} onChange={handleChange} error={errors[`education.${eduIndex}.startDate`]} readOnly={!isEditMode} />
                               <div className="flex items-end">
-                                <InputField label="End Date (YYYY-MM-DD) or 'Expected'" name={`education.${eduIndex}.endDate`} type="date" value={edu.endDate} onChange={handleChange} error={errors[`education.${eduIndex}.endDate`]} readOnly={!isEditMode} className="flex-grow" dateFieldType="education" />
-                                {isEditMode && edu.endDate !== 'Present' && ( // "Present" for education is "Expected"
-                                  <button type="button" onClick={() => handleChange({ target: { name: `education.${eduIndex}.endDate`, value: 'Present' }})} className="ml-2 px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Expected</button>
+                                <InputField 
+                                  label="End Date" 
+                                  name={`education.${eduIndex}.endDate`} 
+                                  type="date" 
+                                  value={edu.endDate === 'Present' ? '' : edu.endDate}
+                                  onChange={(e) => {
+                                    // If toggling to a date, clear any existing errors
+                                    if (e.target.value) {
+                                      const today = new Date().toISOString().split('T')[0];
+                                      if (e.target.value > today) {
+                                        setErrors(prev => ({
+                                          ...prev,
+                                          [`education.${eduIndex}.endDate`]: 'End date cannot be in the future'
+                                        }));
+                                        return;
+                                      }
+                                      if (edu.startDate && e.target.value < edu.startDate) {
+                                        setErrors(prev => ({
+                                          ...prev,
+                                          [`education.${eduIndex}.endDate`]: 'End date cannot be before start date'
+                                        }));
+                                        return;
+                                      }
+                                    }
+                                    handleChange(e);
+                                  }} 
+                                  error={errors[`education.${eduIndex}.endDate`]} 
+                                  readOnly={!isEditMode || edu.endDate === 'Present'} 
+                                  className="flex-grow" 
+                                  dateFieldType="education" 
+                                  max={new Date().toISOString().split('T')[0]}
+                                  placeholder={edu.endDate === 'Present' ? 'Present' : ''}
+                                />
+                                {isEditMode && (
+                                  <button 
+                                    type="button" 
+                                    onClick={() => {
+                                      const newEndDate = edu.endDate === 'Present' ? '' : 'Present';
+                                      handleChange({ 
+                                        target: { 
+                                          name: `education.${eduIndex}.endDate`, 
+                                          value: newEndDate 
+                                        }
+                                      });
+                                      // Clear any existing error for this field when toggling
+                                      setErrors(prev => {
+                                        const newErrors = { ...prev };
+                                        delete newErrors[`education.${eduIndex}.endDate`];
+                                        return newErrors;
+                                      });
+                                    }}
+                                    className={`ml-2 px-3 py-2 text-sm rounded ${
+                                      edu.endDate === 'Present' 
+                                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                    }`}
+                                  >
+                                    {edu.endDate === 'Present' ? '×' : 'Expected'}
+                                  </button>
                                 )}
                               </div>
                             </div>
@@ -1093,7 +1203,7 @@ export default function ProfileForm({ user }) {
                             <div className="flex items-end">
                               <InputField label="End Date (YYYY-MM-DD) or 'Present'" name={`workExperience.${index}.endDate`} type="date" value={role.endDate} onChange={handleChange} error={errors[`workExperience.${index}.endDate`]} readOnly={!isEditMode} className="flex-grow" dateFieldType="work" />
                               {isEditMode && role.endDate !== 'Present' && (
-                                  <button type="button" onClick={() => handleChange({ target: { name: `workExperience.${index}.endDate`, value: 'Present' }})} className="ml-2 px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Present</button>
+                                <button type="button" onClick={() => handleChange({ target: { name: `workExperience.${index}.endDate`, value: 'Present' }})} className="ml-2 px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Present</button>
                               )}
                             </div>
                           </div>
@@ -1134,7 +1244,38 @@ export default function ProfileForm({ user }) {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField label="Start Date (YYYY-MM-DD)" name={`education.${index}.startDate`} type="date" value={edu.startDate} onChange={handleChange} error={errors[`education.${index}.startDate`]} readOnly={!isEditMode} />
                             <div className="flex items-end">
-                              <InputField label="End Date (YYYY-MM-DD) or 'Expected'" name={`education.${index}.endDate`} type="date" value={edu.endDate} onChange={handleChange} error={errors[`education.${index}.endDate`]} readOnly={!isEditMode} className="flex-grow" dateFieldType="education" />
+                              <InputField 
+                                label="End Date" 
+                                name={`education.${index}.endDate`} 
+                                type="date" 
+                                value={edu.endDate} 
+                                onChange={(e) => {
+                                  // Validate end date is not before start date and not in future
+                                  if (e.target.value !== 'Present') {
+                                    const today = new Date().toISOString().split('T')[0];
+                                    if (e.target.value > today) {
+                                      setErrors(prev => ({
+                                        ...prev,
+                                        [`education.${index}.endDate`]: 'End date cannot be in the future'
+                                      }));
+                                      return;
+                                    }
+                                    if (edu.startDate && e.target.value < edu.startDate) {
+                                      setErrors(prev => ({
+                                        ...prev,
+                                        [`education.${index}.endDate`]: 'End date cannot be before start date'
+                                      }));
+                                      return;
+                                    }
+                                  }
+                                  handleChange(e);
+                                }} 
+                                error={errors[`education.${index}.endDate`]} 
+                                readOnly={!isEditMode} 
+                                className="flex-grow" 
+                                dateFieldType="education" 
+                                max={new Date().toISOString().split('T')[0]} // Prevent future dates
+                              />
                               {isEditMode && edu.endDate !== 'Present' && (
                                 <button type="button" onClick={() => handleChange({ target: { name: `education.${index}.endDate`, value: 'Present' }})} className="ml-2 px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Expected</button>
                               )}
@@ -1168,151 +1309,124 @@ export default function ProfileForm({ user }) {
                               title="Remove Certification"
                             >
                               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                          </button>
-                        )}
-                        <InputField label="Certification Name" name={`certifications.${index}.name`} value={cert.name} onChange={handleChange} error={errors[`certifications.${index}.name`]} readOnly={!isEditMode} />
-                        <InputField label="Issuer" name={`certifications.${index}.issuer`} value={cert.issuer} onChange={handleChange} error={errors[`certifications.${index}.issuer`]} readOnly={!isEditMode} />
-                        <InputField label="Year" name={`certifications.${index}.year`} type="number" value={cert.year} onChange={handleChange} placeholder="YYYY" error={errors[`certifications.${index}.year`]} readOnly={!isEditMode} />
-                      </div>
-                    ))}
-                  </SectionWrapper>
-                )}
+                            </button>
+                          )}
+                          <InputField label="Certification Name" name={`certifications.${index}.name`} value={cert.name} onChange={handleChange} error={errors[`certifications.${index}.name`]} readOnly={!isEditMode} />
+                          <InputField label="Issuer" name={`certifications.${index}.issuer`} value={cert.issuer} onChange={handleChange} error={errors[`certifications.${index}.issuer`]} readOnly={!isEditMode} />
+                          <InputField label="Year" name={`certifications.${index}.year`} type="number" value={cert.year} onChange={handleChange} placeholder="YYYY" error={errors[`certifications.${index}.year`]} readOnly={!isEditMode} />
+                        </div>
+                      ))}
+                    </SectionWrapper>
+                  )}
 
-                {currentStep === 6 && (
-                  <SectionWrapper title="Customization & Fit" readOnly={!isEditMode}>
-                    <InputField label="Key Strengths / Keywords for AI (comma-separated)" name="keyStrengths" value={formData.keyStrengths} onChange={handleChange} error={errors.keyStrengths} readOnly={!isEditMode} />
-                    <TextareaField label="Specific Values or Cultural Fit Notes (Optional)" name="culturalFitNotes" value={formData.culturalFitNotes} onChange={handleChange} placeholder="Describe what kind of company culture you thrive in, or values important to you." rows={3} error={errors.culturalFitNotes} className="mt-6" readOnly={!isEditMode} />
-                  </SectionWrapper>
-                )}
+                  {currentStep === 6 && (
+                    <SectionWrapper title="Customization & Fit" readOnly={!isEditMode}>
+                      <InputField label="Key Strengths / Keywords for AI (comma-separated)" name="keyStrengths" value={formData.keyStrengths} onChange={handleChange} error={errors.keyStrengths} readOnly={!isEditMode} />
+                      <TextareaField label="Specific Values or Cultural Fit Notes (Optional)" name="culturalFitNotes" value={formData.culturalFitNotes} onChange={handleChange} placeholder="Describe what kind of company culture you thrive in, or values important to you." rows={3} error={errors.culturalFitNotes} className="mt-6" readOnly={!isEditMode} />
+                    </SectionWrapper>
+                  )}
 
-                {currentStep === 7 && (
-                  <SectionWrapper title="Optional Extras" readOnly={!isEditMode}>
-                    <TextareaField label="Volunteer Experience (Optional)" name="volunteerExperience" value={formData.volunteerExperience} onChange={handleChange} placeholder="Briefly describe your volunteer work." rows={3} error={errors.volunteerExperience} readOnly={!isEditMode} />
-                    <InputField label="Languages (comma-separated, e.g., English, Spanish, French)" name="languages" value={formData.languages} onChange={handleChange} error={errors.languages} className="mt-6" readOnly={!isEditMode} />
-                    <TextareaField label="Publications or Portfolios (URLs, one per line)" name="publicationsOrPortfolios" value={formData.publicationsOrPortfolios} onChange={handleChange} placeholder="https://yourportfolio.com&#10;https://github.com/yourrepo" rows={4} error={errors.publicationsOrPortfolios} className="mt-6" readOnly={!isEditMode} />
-                    <RadioGroupField label="Willing to Relocate?" name="willingToRelocate" value={formData.willingToRelocate} onChange={handleChange} options={['Yes', 'No']} readOnly={!isEditMode} className="mt-6" />
-                  </SectionWrapper>
-                )}
+                  {currentStep === 7 && (
+                    <SectionWrapper title="Optional Extras" readOnly={!isEditMode}>
+                      <TextareaField label="Volunteer Experience (Optional)" name="volunteerExperience" value={formData.volunteerExperience} onChange={handleChange} placeholder="Briefly describe your volunteer work." rows={3} error={errors.volunteerExperience} readOnly={!isEditMode} />
+                      <InputField label="Languages (comma-separated, e.g., English, Spanish, French)" name="languages" value={formData.languages} onChange={handleChange} error={errors.languages} className="mt-6" readOnly={!isEditMode} />
+                      <TextareaField label="Publications or Portfolios (URLs, one per line)" name="publicationsOrPortfolios" value={formData.publicationsOrPortfolios} onChange={handleChange} placeholder="https://yourportfolio.com&#10;https://github.com/yourrepo" rows={4} error={errors.publicationsOrPortfolios} className="mt-6" readOnly={!isEditMode} />
+                      <RadioGroupField label="Willing to Relocate?" name="willingToRelocate" value={formData.willingToRelocate} onChange={handleChange} options={['Yes', 'No']} readOnly={!isEditMode} className="mt-6" />
+                    </SectionWrapper>
+                  )}
                 </>
               )}
             </div>
           )} {/* End of Conditional Rendering */}
 
           {/* Navigation Buttons and Submit */}
-          <div className="fixed bottom-6 right-6 left-6 flex justify-between space-x-2 p-4 bg-white rounded-xl shadow-lg">
-            {/* Previous Button (Multi-step) */}
-            {!currentEditSectionId && isEditMode && currentStep > 0 && (
-              <button
-                type="button"
-                onClick={handlePrevious}
-                className="flex items-center px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-200 ease-in-out transform hover:-translate-x-1"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                Previous
-              </button>
-            )}
+          <div className="space-y-6">
+            {/* Your existing form fields */}
+            {children}
             
-            {/* Save Current Section Button (Multi-step, not last step) */}
-            {!currentEditSectionId && isEditMode && currentStep < formSteps.length - 1 && (
-              <button
-                type="button" // Use type="button" to prevent default form submission
-                onClick={handleSaveSection} // Call the unified save logic
-                disabled={isSubmitting}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-70 transition duration-200 ease-in-out transform hover:scale-105"
-              >
-                {isSubmitting ? 'Saving Section...' : 'Save Current Section'}
-                {isSubmitting && <svg className="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
-              </button>
-            )}
-
-            {/* Next Button (Multi-step) */}
-            {!currentEditSectionId && isEditMode && currentStep < formSteps.length - 1 && (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="ml-auto flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 ease-in-out transform hover:translate-x-1"
-              >
-                Next
-                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-              </button>
-            )}
-
-            {/* Save Full Profile Button (Multi-step, last step) */}
-            {!currentEditSectionId && isEditMode && currentStep === formSteps.length - 1 && (
-              <button
-                type="submit" // This button will trigger handleSubmit
-                disabled={isSubmitting}
-                className="ml-auto flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-70 transition duration-200 ease-in-out transform hover:scale-105"
-              >
-                {isSubmitting ? 'Saving Profile...' : 'Save Full Profile'}
-                {isSubmitting && <svg className="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
-              </button>
-            )}
-
-            {/* Buttons for single-section edit mode (visible only when currentEditSectionId is set) */}
-            {currentEditSectionId && (
-              <div className="flex justify-between w-full">
-                <button
-                  type="button"
-                  onClick={handleCancelSectionEdit}
-                  className="flex items-center px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-200 ease-in-out transform hover:-translate-x-1"
-                >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  Cancel Edit
-                </button>
-                <div className="flex space-x-2">
+            <div className="fixed bottom-6 right-6 left-6 flex justify-between p-4 rounded-xl">
+              <div className="flex-1">
+                {/* Previous Button (Multi-step) */}
+                {!currentEditSectionId && isEditMode && currentStep > 0 && (
                   <button
                     type="button"
-                    onClick={handleSaveSection}
-                    disabled={isSubmitting}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-70 transition duration-200 ease-in-out transform hover:scale-105"
+                    onClick={handlePrevious}
+                    className="flex items-center px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-200 ease-in-out transform hover:-translate-x-1"
                   >
-                    {isSubmitting ? 'Saving...' : 'Save Section'}
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Previous
+                  </button>
+                )}
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                {/* Save Current Section Button (Multi-step, not last step) */}
+                {!currentEditSectionId && isEditMode && currentStep < formSteps.length - 1 && (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="ml-auto flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-70 transition duration-200 ease-in-out transform hover:scale-105"
+                  >
+                    {isSubmitting ? 'Saving Profile...' : 'Save Full Profile'}
                     {isSubmitting && <svg className="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
                   </button>
+                )}
+                {/* Buttons for single-section edit mode (visible only when currentEditSectionId is set) */}
+                {currentEditSectionId && (
+                  <div className="flex justify-between w-full">
+                    <button
+                      type="button"
+                      onClick={handleCancelSectionEdit}
+                      className="flex items-center px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-200 ease-in-out transform hover:-translate-x-1"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      Cancel Edit
+                    </button>
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={handleSaveSection}
+                        disabled={isSubmitting}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-70 transition duration-200 ease-in-out transform hover:scale-105"
+                      >
+                        {isSubmitting ? 'Saving...' : 'Save Section'}
+                        {isSubmitting && <svg className="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSaveSection().then(() => {
+                            setIsEditMode(false);
+                            setIsReviewMode(true);
+                            setCurrentEditSectionId(null);
+                          });
+                        }}
+                        disabled={isSubmitting}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-70 transition duration-200 ease-in-out transform hover:scale-105"
+                      >
+                        {isSubmitting ? 'Saving...' : 'Save & Return'}
+                        {isSubmitting && <svg className="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {/* Initial Edit Profile button (visible only in initial state) */}
+                {!isEditMode && !isReviewMode && (
                   <button
                     type="button"
                     onClick={() => {
-                      handleSaveSection().then(() => {
-                        setIsEditMode(false);
-                        setIsReviewMode(true);
-                        setCurrentEditSectionId(null);
-                      });
+                      setIsEditMode(true);
+                      setIsReviewMode(false); // Ensure review mode is off
+                      setCurrentStep(0); // Reset to first step when entering edit mode
+                      setCurrentEditSectionId(null); // Ensure not in single section edit mode
                     }}
-                    disabled={isSubmitting}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-70 transition duration-200 ease-in-out transform hover:scale-105"
+                    className="ml-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 ease-in-out transform hover:scale-105"
                   >
-                    {isSubmitting ? 'Saving...' : 'Save & Return'}
-                    {isSubmitting && <svg className="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
+                    Edit Profile
                   </button>
-                </div>
+                )}
               </div>
-            )}
-            {/* Initial Edit Profile button (visible only in initial state) */}
-            {!isEditMode && !isReviewMode && (
-              <button
-                type="button"
-                onClick={() => {
-                  setIsEditMode(true);
-                  setIsReviewMode(false); // Ensure review mode is off
-                  setCurrentStep(0); // Reset to first step when entering edit mode
-                  setCurrentEditSectionId(null); // Ensure not in single section edit mode
-                }}
-                className="ml-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 ease-in-out transform hover:scale-105"
-              >
-                Edit Profile
-              </button>
-            )}
-            {/* Edit All Sections button (visible in review mode when not editing a single section) */}
-            {isReviewMode && !currentEditSectionId && (
-                 <button
-                 type="button"
-                 onClick={() => handleSectionEdit(0)} // Go to first step on overall edit
-                 className="ml-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 ease-in-out transform hover:scale-105"
-               >
-                 Edit All Sections
-               </button>
-            )}
+            </div>
           </div>
         </form>
 
