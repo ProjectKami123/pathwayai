@@ -901,7 +901,7 @@ export default function ProfileForm({ user }) {
                             </button>
                         )}
                         {formData.workExperience.length === 0 && !isEditMode && (
-                            <p className="text-gray-500 italic mb-4">No work experience added yet. Click "Add Work Experience" to begin.</p>
+                            <p className="text-gray-500 italic mb-4">No work experience added yet. Click &quot;Add Work Experience&quot; to begin.</p>
                         )}
                         {formData.workExperience.map((role, index) => (
                           <div key={index} className="space-y-4 border border-gray-200 p-4 rounded-md mb-4 relative bg-gray-50">
@@ -1070,7 +1070,7 @@ export default function ProfileForm({ user }) {
                           </button>
                       )}
                       {formData.workExperience.length === 0 && !isEditMode && (
-                          <p className="text-gray-500 italic mb-4">No work experience added yet. Click "Add Work Experience" to begin.</p>
+                          <p className="text-gray-500 italic mb-4">No work experience added yet. Click &quot;Add Work Experience&quot; to begin.</p>
                       )}
                       {formData.workExperience.map((role, index) => (
                         <div key={index} className="space-y-4 border border-gray-200 p-4 rounded-md mb-4 relative bg-gray-50">
