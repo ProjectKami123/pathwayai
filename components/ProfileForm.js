@@ -428,15 +428,6 @@ export default function ProfileForm({ user, children }) {
   };
 
 
-  const handleNext = () => {
-    if (validateCurrentStep()) {
-      setCurrentStep(prev => Math.min(prev + 1, formSteps.length - 1));
-      setSubmitError('');
-    } else {
-        setSubmitError('Please correct the errors in this section before proceeding.');
-    }
-  };
-
   const handlePrevious = () => {
     setCurrentStep(prev => Math.max(prev - 1, 0));
     setSubmitError('');
@@ -1242,7 +1233,7 @@ export default function ProfileForm({ user, children }) {
                           <InputField label="Institution Name" name={`education.${index}.institution`} value={edu.institution} onChange={handleChange} error={errors[`education.${index}.institution`]} readOnly={!isEditMode} />
                           <InputField label="Location (Optional)" name={`education.${index}.location`} value={edu.location} onChange={handleChange} error={errors[`education.${index}.location`]} readOnly={!isEditMode} />
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InputField label="Start Date (YYYY-MM-DD)" name={`education.${index}.startDate`} type="date" value={edu.startDate} onChange={handleChange} error={errors[`education.${index}.startDate`]} readOnly={!isEditMode} />
+                            <InputField label="Start Date" name={`education.${index}.startDate`} type="date" value={edu.startDate} onChange={handleChange} error={errors[`education.${index}.startDate`]} readOnly={!isEditMode} />
                             <div className="flex items-end">
                               <InputField 
                                 label="End Date" 
