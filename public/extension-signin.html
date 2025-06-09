@@ -1,188 +1,192 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Firebase Extension Sign-In Helper</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Sign-in</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f5f5f5;
+        }
+        .auth-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+        }
+        .auth-button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .auth-button:hover {
+            background: #3367d6;
+        }
+        .status {
+            margin-top: 1rem;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+    </style>
 </head>
 <body>
-  <p>This page is used by the Chrome extension for authentication and should not be accessed directly.</p>
-  <div id="firebaseui-auth-container"></div>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-  <!-- Add other Firebase products you might need for auth methods, e.g., Phone auth -->
-  <!-- <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script> -->
+    <div class="auth-container">
+        <h2>Sign in to PathwayAI</h2>
+        <p>Choose your sign-in method:</p>
+        
+        <button id="google-signin" class="auth-button">
+            Sign in with Google
+        </button>
+        
+        <div id="status" class="status" style="display: none;"></div>
+    </div>
 
-  <script>
-    // Your Firebase project configuration
-    const firebaseConfig = {
-  apiKey: "AIzaSyBsersVMxPG21aqYErkQs0R1RB2Nnpr5jQ",
-  authDomain: "pathwayai-55245.firebaseapp.com",
-  projectId: "pathwayai-55245",
-  storageBucket: "pathwayai-55245.firebasestorage.app",
-  messagingSenderId: "1001651411261",
-  appId: "1:1001651411261:web:b2bb462da75d7f99974d54",
-  measurementId: "G-CE8MZ9J80X"
-};
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
-    // Initialize Firebase if not already initialized
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const auth = firebase.auth();
+    <script>
+        console.log('Extension auth page loaded');
 
-    console.log("Extension Sign-In Helper Loaded");
+        // Firebase configuration - REPLACE WITH YOUR CONFIG
+        const firebaseConfig = {
+            apiKey: "your-api-key",
+            authDomain: "your-auth-domain",
+            projectId: "your-project-id",
+            storageBucket: "your-storage-bucket",
+            messagingSenderId: "your-sender-id",
+            appId: "your-app-id"
+        };
 
-    // --- Messaging Logic ---
-    // Listen for messages from the parent window (the iframe in the offscreen document)
-    window.addEventListener('message', async (event) => {
-      // IMPORTANT: Check the origin of the message to prevent XSS attacks
-      // Only accept messages from your expected extension origin or parent window
-      // In this case, we're expecting messages from the offscreen document's iframe,
-      // which will be running this page on your Vercel domain.
-      // We should also check that the message came from a frame embedded in the extension context.
-       if (event.origin !== 'https://pathwayai-jet.vercel.app') { // Or check for your Vercel domain
-           console.warn("Message received from unexpected origin:", event.origin);
-           return;
-       }
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
 
-       // Additional security: Verify the message source is an iframe within an extension context
-       // This check is more complex and often handled by the receiving script
-       // For simplicity here, we primarily rely on origin checking.
+        // UI Elements
+        const googleSigninBtn = document.getElementById('google-signin');
+        const statusDiv = document.getElementById('status');
 
-      const message = event.data;
-      console.log("Received message in helper:", message);
-
-      try {
-        let userCredential = null;
-        let actionStatus = 'failed';
-        let error = null;
-
-        if (message.action === 'signin') {
-          const providerType = message.provider; // e.g., 'google', 'facebook', 'phone', 'email'
-          console.log(`Attempting sign-in with: ${providerType}`);
-
-          // --- Authentication Logic (Adapt based on your working web app code) ---
-          if (providerType === 'google') {
-             const provider = new firebase.auth.GoogleAuthProvider();
-             // Add any custom parameters if you use them
-             // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-             userCredential = await auth.signInWithPopup(provider);
-          } else if (providerType === 'facebook') {
-             const provider = new firebase.auth.FacebookAuthProvider();
-             // Add any custom parameters if you use them
-             userCredential = await auth.signInWithPopup(provider);
-          } else if (providerType === 'phone') {
-              // Phone auth with signInWithPopup usually involves a reCAPTCHA.
-              // This is more complex in an iframe. You might need signInWithPhoneNumber
-              // and handle the verification code flow within this page,
-              // potentially showing UI elements if the iframe is visible or sized appropriately.
-              // For this example, we'll note it's more involved than pop-ups.
-              console.error("Phone sign-in via popup/iframe requires specific handling.");
-               error = { code: 'auth/phone-auth-not-supported-in-iframe', message: 'Phone authentication requires different handling in this context.' };
-
-          } else if (providerType === 'email') {
-             // Email/Password or Email Link methods can also be handled here.
-             // signInWithEmailAndPassword would involve input fields, which isn't ideal for an iframe helper.
-             // Email Link requires handling redirects/links.
-             // For simple cases, you might not use this page for email/password, but rather directly
-             // in the extension's UI if you make the extension popup large enough.
-              console.error("Email sign-in via popup/iframe often requires dedicated UI.");
-               error = { code: 'auth/email-auth-not-supported-in-iframe', message: 'Email authentication requires different handling in this context.' };
-
-          } else if (providerType === 'checkAuth') {
-             // Action to just check the current user state
-             const currentUser = auth.currentUser;
-             if (currentUser) {
-                actionStatus = 'success';
-                console.log("User already signed in:", currentUser.uid);
-                // Send back relevant user info, not the whole object
-                window.parent.postMessage({
-                   action: 'authResult',
-                   status: 'success',
-                   user: {
-                      uid: currentUser.uid,
-                      email: currentUser.email,
-                      displayName: currentUser.displayName,
-                      photoURL: currentUser.photoURL,
-                      // Add other relevant user properties
-                   }
-                }, event.origin); // Send back to the parent window (offscreen document)
-                return; // Exit early as we just checked state
-             } else {
-                 actionStatus = 'success'; // Checking state is successful, but no user found
-                 console.log("No user signed in.");
-                 window.parent.postMessage({
-                    action: 'authResult',
-                    status: 'no_user',
-                 }, event.origin); // Send back to the parent window (offscreen document)
-                 return; // Exit early
-             }
-          }
-           // --- End Authentication Logic ---
-
-          if (userCredential && userCredential.user) {
-            actionStatus = 'success';
-            console.log("Sign-in successful:", userCredential.user.uid);
-             // Send back relevant user info, not the whole credential object
-            window.parent.postMessage({
-               action: 'authResult',
-               status: actionStatus,
-               user: {
-                  uid: userCredential.user.uid,
-                  email: userCredential.user.email,
-                  displayName: userCredential.user.displayName,
-                  photoURL: userCredential.user.photoURL,
-                   // Add other relevant user properties
-               }
-            }, event.origin); // Send back to the parent window (offscreen document)
-          } else if (!error) {
-             // Handle cases where userCredential might be null or user property missing but no explicit error
-             error = { code: 'auth/signin-failed', message: 'Sign-in process did not return a user credential.' };
-          }
-
-
-        } else {
-             console.warn("Unknown action received:", message.action);
-              error = { code: 'auth/unknown-action', message: 'Received unknown action.' };
-              actionStatus = 'failed'; // Mark as failed if action is unknown
+        // Show status message
+        function showStatus(message, type = 'loading') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
         }
 
-        if (error) {
-             console.error("Authentication error:", error);
-             // Send failure message back
-             window.parent.postMessage({
-                action: 'authResult',
-                status: 'failed',
-                error: {
-                   code: error.code,
-                   message: error.message
+        // Hide status message
+        function hideStatus() {
+            statusDiv.style.display = 'none';
+        }
+
+        // Handle authentication result
+        function handleAuthResult(user) {
+            if (user) {
+                showStatus('Signed in successfully!', 'success');
+                
+                // Send user data back to extension
+                window.parent.postMessage({
+                    type: 'AUTH_SUCCESS',
+                    data: {
+                        user: {
+                            uid: user.uid,
+                            email: user.email,
+                            displayName: user.displayName,
+                            photoURL: user.photoURL
+                        }
+                    }
+                }, '*');
+                
+                // Also send auth state changed
+                window.parent.postMessage({
+                    type: 'AUTH_STATE_CHANGED',
+                    data: {
+                        user: {
+                            uid: user.uid,
+                            email: user.email,
+                            displayName: user.displayName,
+                            photoURL: user.photoURL
+                        }
+                    }
+                }, '*');
+            } else {
+                showStatus('Sign-in failed', 'error');
+            }
+        }
+
+        // Google Sign-in
+        async function signInWithGoogle() {
+            try {
+                showStatus('Signing in with Google...');
+                
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.addScope('email');
+                provider.addScope('profile');
+                
+                const result = await auth.signInWithPopup(provider);
+                handleAuthResult(result.user);
+                
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                showStatus(`Sign-in failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Event listeners
+        googleSigninBtn.addEventListener('click', signInWithGoogle);
+
+        // Listen for messages from extension
+        window.addEventListener('message', (event) => {
+            console.log('Auth page received message:', event.data);
+            
+            if (event.data.type === 'START_AUTH') {
+                const provider = event.data.provider;
+                
+                if (provider === 'google') {
+                    signInWithGoogle();
+                } else {
+                    showStatus(`Unsupported provider: ${provider}`, 'error');
                 }
-             }, event.origin); // Send back to the parent window (offscreen document)
-          }
+            }
+        });
 
-      } catch (error) {
-        console.error("Authentication failed:", error);
-        // Send failure message back
+        // Monitor auth state changes
+        auth.onAuthStateChanged((user) => {
+            console.log('Auth state changed:', user);
+            
+            if (user) {
+                handleAuthResult(user);
+            }
+        });
+
+        // Send ready message to extension
         window.parent.postMessage({
-           action: 'authResult',
-           status: 'failed',
-           error: {
-              code: error.code,
-              message: error.message
-           }
-        }, event.origin); // Send back to the parent window (offscreen document)
-      }
-    });
-
-    // Optional: Listen for Firebase Auth state changes within this helper page
-    // This can be useful for debugging or logging, but the main result is sent via postMessage after the popup closes.
-    auth.onAuthStateChanged(user => {
-      console.log("Auth state changed in helper:", user ? user.uid : 'Signed Out');
-      // Note: Don't rely *solely* on this for the extension. The extension needs
-      // to receive the result via the postMessage initiated after signInWithPopup resolves.
-    });
-
-     console.log("Waiting for messages from extension...");
-
-  </script>
+            type: 'AUTH_PAGE_READY'
+        }, '*');
+    </script>
 </body>
 </html>
