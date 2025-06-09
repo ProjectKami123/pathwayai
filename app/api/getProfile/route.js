@@ -39,7 +39,7 @@ export async function GET(request) {
     }
 
     token = authHeader.split('Bearer ')[1];
-    console.log('Token being verified:', token);
+    // console.log('Token being verified:', token); // Commented out for security
 
     // Use the helper function to verify the token
     const decodedToken = await verifyToken(token);
@@ -70,7 +70,7 @@ export async function GET(request) {
   } catch (error) {
     console.error('Error in GET /api/getProfile:', error.message);
     if (token) {
-      console.error('Failed token content during error:', token);
+      // console.error('Failed token content during error:', token); // Commented out for security
     }
     // If error is from getUser (e.g., user not found, though unlikely if token is valid)
     // or from verifyToken

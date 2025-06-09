@@ -19,7 +19,7 @@ export async function POST(request) {
     token = authorization.split('Bearer ')[1];
     const decodedToken = await verifyToken(token);
     const uid = decodedToken.uid;
-    console.log("✅ Resume Route: Token verified for UID:", uid);
+    // Logging redacted for security - UID verification successful
 
     const { jobData } = await request.json();
     if (!jobData || !jobData.description) {
@@ -41,11 +41,15 @@ export async function POST(request) {
       - Rephrase the user's experience to directly match the key requirements in the job description.
       - Output the result as a clean string, ready to be used. Start with a heading "## Professional Experience".
 
-      **User's Full Profile (for context):**
-      ${JSON.stringify(userProfile, null, 2)}
+      **User's Professional Experience (for context):**
+      ${JSON.stringify({
+        workExperience: userProfile.workExperience,
+        skills: userProfile.skills,
+        education: userProfile.education
+      }, null, 2)}
 
       **Target Job Description:**
-      ${jobData.description}
+      ${(jobData.description || '').substring(0, 10000)}
 
       **Generated Resume Section:**
     `;
@@ -61,13 +65,12 @@ export async function POST(request) {
     return NextResponse.json({ resume: resumeSection });
 
   } catch (error) {
-    console.error('Error in /api/generate-resume:', error.message);
-    if (token) {
-      console.error('Failed token during error in /api/generate-resume:', token);
-    }
+    console.error('Error in /api/generate-cover-letter:', error.code || 'Unknown error');
+    
+    // Generic error messages to prevent information leakage
     if (error.message && error.message.toLowerCase().includes('unauthorized')) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
+      return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
     }
-    return NextResponse.json({ error: 'Internal Server Error generating resume' }, { status: 500 });
+    return NextResponse.json({ error: 'An error occurred while processing your request' }, { status: 500 });
   }
 }

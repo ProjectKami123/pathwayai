@@ -46,7 +46,12 @@ export default function SidePanel() {
   return (
     <>
       <div className="w-full h-full bg-white flex flex-col p-4 focus:outline-none">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">PathwayAI</h2>
+        <h2 
+          className="text-2xl font-bold text-gray-800 mb-6 cursor-pointer hover:text-blue-600 transition-colors duration-200"
+          onClick={() => router.push('/')}
+        >
+          PathwayAI
+        </h2>
         <div className="border-t border-gray-200 w-full mb-6"></div>
         <nav className="flex-grow">
           <ul className="space-y-3">
