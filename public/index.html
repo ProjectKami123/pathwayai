@@ -1,0 +1,39 @@
+<!-- c:\users\kiron\pathwayai\public\index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase Auth Popup Handler</title>
+  <!-- Load the main JavaScript file for handling pop-up authentication -->
+  <script type="module" src="signInWithPopup.js"></script>
+  <style>
+    /* Basic styling for the page, as it will run in an iframe */
+    body {
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f4f8;
+      color: #333;
+    }
+    h1 {
+      font-size: 1.5rem;
+      color: #2c3e50;
+      border: 1px solid #ddd;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      background-color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Firebase Authentication Popup Initiated</h1>
+  <!-- This page will be loaded inside an iframe by the Chrome extension. -->
+  <!-- The authentication process will happen in the background. -->
+</body>
+</html>
