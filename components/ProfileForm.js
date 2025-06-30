@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase'; // Assumes firebase.js is located in lib/firebase.js
+import ProgressIndicator from './ProgressIndicator';
+import { generateResume } from '../utils/resumeGenerator'; // Import generateResume from resumeGenerator
 
 export default function ProfileForm({ user, children }) {
   const [formData, setFormData] = useState({
@@ -43,6 +45,11 @@ export default function ProfileForm({ user, children }) {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [isGeneratingResume, setIsGeneratingResume] = useState(false);
+  const [resumeGenerationStatus, setResumeGenerationStatus] = useState({
+    success: null,
+    message: ''
+  });
 
   // NEW STATE: Tracks which section is being edited individually
   const [currentEditSectionId, setCurrentEditSectionId] = useState(null); 
@@ -478,15 +485,32 @@ export default function ProfileForm({ user, children }) {
     setSubmitSuccess(false);
 
     try {
+      // Prepare the profile data with arrays properly formatted
       const profileData = {
         ...formData,
         userId: currentUserId,
         email: formData.email,
-        keySkills: formData.keySkills.split(',').map(skill => skill.trim()).filter(Boolean),
-        preferredJobTitles: formData.preferredJobTitles.split(',').map(title => title.trim()).filter(Boolean),
-        keyStrengths: formData.keyStrengths.split(',').map(strength => strength.trim()).filter(Boolean),
-        languages: formData.languages.split(',').map(lang => lang.trim()).filter(Boolean),
-        publicationsOrPortfolios: formData.publicationsOrPortfolios.split('\n').map(url => url.trim()).filter(Boolean),
+        // Handle keySkills as an array
+        keySkills: Array.isArray(formData.keySkills) 
+          ? formData.keySkills.map(skill => skill.trim()).filter(Boolean)
+          : (formData.keySkills || '').split(',').map(s => s.trim()).filter(Boolean),
+        // Handle preferredJobTitles as an array
+        preferredJobTitles: Array.isArray(formData.preferredJobTitles)
+          ? formData.preferredJobTitles.map(title => title.trim()).filter(Boolean)
+          : (formData.preferredJobTitles || '').split(',').map(s => s.trim()).filter(Boolean),
+        // Handle keyStrengths as an array
+        keyStrengths: Array.isArray(formData.keyStrengths) 
+          ? formData.keyStrengths.map(strength => strength.trim()).filter(Boolean)
+          : (formData.keyStrengths || '').split(',').map(s => s.trim()).filter(Boolean),
+        // Keep languages as array of objects
+        languages: formData.languages.map(lang => ({
+          language: lang.language.trim(),
+          proficiency: lang.proficiency.trim()
+        })).filter(lang => lang.language),
+        // Handle publications/portfolios as array of strings
+        publicationsOrPortfolios: Array.isArray(formData.publicationsOrPortfolios)
+          ? formData.publicationsOrPortfolios.map(url => url.trim()).filter(Boolean)
+          : (formData.publicationsOrPortfolios || '').split('\n').map(url => url.trim()).filter(Boolean),
 
         willingToRelocate: formData.willingToRelocate === 'Yes',
         profileLastUpdated: serverTimestamp(),
@@ -497,8 +521,7 @@ export default function ProfileForm({ user, children }) {
       if (cleanedProfileData.mostRecentRole) delete cleanedProfileData.mostRecentRole;
       if (cleanedProfileData.education_single) delete cleanedProfileData.education_single;
       if (cleanedProfileData.certification_single) delete cleanedProfileData.certification_single;
-
-
+      
       const profileRef = doc(db, 'userProfiles', currentUserId);
       // setDoc with merge: true will update only the fields provided,
       // which effectively saves the current state of formData.
@@ -687,15 +710,32 @@ export default function ProfileForm({ user, children }) {
     setSubmitSuccess(false);
 
     try {
+      // Prepare the profile data with arrays properly formatted
       const profileData = {
         ...formData,
         userId: currentUserId,
         email: formData.email,
-        keySkills: formData.keySkills.split(',').map(skill => skill.trim()).filter(Boolean),
-        preferredJobTitles: formData.preferredJobTitles.split(',').map(title => title.trim()).filter(Boolean),
-        keyStrengths: formData.keyStrengths.split(',').map(strength => strength.trim()).filter(Boolean),
-        languages: formData.languages.split(',').map(lang => lang.trim()).filter(Boolean),
-        publicationsOrPortfolios: formData.publicationsOrPortfolios.split('\n').map(url => url.trim()).filter(Boolean),
+        // Handle keySkills as an array
+        keySkills: Array.isArray(formData.keySkills) 
+          ? formData.keySkills.map(skill => skill.trim()).filter(Boolean)
+          : (formData.keySkills || '').split(',').map(s => s.trim()).filter(Boolean),
+        // Handle preferredJobTitles as an array
+        preferredJobTitles: Array.isArray(formData.preferredJobTitles)
+          ? formData.preferredJobTitles.map(title => title.trim()).filter(Boolean)
+          : (formData.preferredJobTitles || '').split(',').map(s => s.trim()).filter(Boolean),
+        // Handle keyStrengths as an array
+        keyStrengths: Array.isArray(formData.keyStrengths) 
+          ? formData.keyStrengths.map(strength => strength.trim()).filter(Boolean)
+          : (formData.keyStrengths || '').split(',').map(s => s.trim()).filter(Boolean),
+        // Keep languages as array of objects
+        languages: formData.languages.map(lang => ({
+          language: lang.language.trim(),
+          proficiency: lang.proficiency.trim()
+        })).filter(lang => lang.language),
+        // Handle publications/portfolios as array of strings
+        publicationsOrPortfolios: Array.isArray(formData.publicationsOrPortfolios)
+          ? formData.publicationsOrPortfolios.map(url => url.trim()).filter(Boolean)
+          : (formData.publicationsOrPortfolios || '').split('\n').map(url => url.trim()).filter(Boolean),
 
         willingToRelocate: formData.willingToRelocate === 'Yes',
         profileLastUpdated: serverTimestamp(),
@@ -706,8 +746,7 @@ export default function ProfileForm({ user, children }) {
       if (cleanedProfileData.mostRecentRole) delete cleanedProfileData.mostRecentRole;
       if (cleanedProfileData.education_single) delete cleanedProfileData.education_single;
       if (cleanedProfileData.certification_single) delete cleanedProfileData.certification_single;
-
-
+      
       const profileRef = doc(db, 'userProfiles', currentUserId);
       await setDoc(profileRef, cleanedProfileData, { merge: true });
 
@@ -728,6 +767,94 @@ export default function ProfileForm({ user, children }) {
     }
   };
 
+  const handleDownloadResume = async () => {
+    // Basic validation
+    if (!formData.fullName || !formData.email) {
+      setResumeGenerationStatus({
+        success: false,
+        message: 'Please fill in your name and email before generating a resume.'
+      });
+      return;
+    }
+
+    setIsGeneratingResume(true);
+    setResumeGenerationStatus({ success: null, message: '' });
+    
+    try {
+      const resumeData = transformFormData(formData);
+      const fileName = `Resume_${formData.fullName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`;
+      
+      await generateResume(resumeData, fileName);
+      
+      // Success feedback
+      setResumeGenerationStatus({
+        success: true,
+        message: 'Resume downloaded successfully! Check your downloads folder.'
+      });
+    } catch (error) {
+      console.error('Error generating resume:', error);
+      
+      // User-friendly error message
+      let errorMessage = 'Failed to generate resume. Please try again.';
+      if (error.message.includes('network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (error.message.includes('invalid')) {
+        errorMessage = 'Invalid data. Please check your profile information.';
+      }
+      
+      setResumeGenerationStatus({
+        success: false,
+        message: errorMessage
+      });
+    } finally {
+      setIsGeneratingResume(false);
+    }
+  };
+
+  useEffect(() => {
+    if (resumeGenerationStatus.message) {
+      const timer = setTimeout(() => {
+        setResumeGenerationStatus({ success: null, message: '' });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [resumeGenerationStatus.message]);
+
+  const transformFormData = (formData) => {
+    // Split fullName into firstName and lastName
+    const [firstName, ...lastNameParts] = formData.fullName.split(' ');
+    const lastName = lastNameParts.join(' ');
+    
+    return {
+      personalInfo: {
+        firstName,
+        lastName,
+        email: formData.email,
+        phone: formData.phoneNumber,
+        linkedIn: formData.linkedinUrl,
+        location: formData.location,
+        summary: formData.professionalSummary,
+      },
+      experiences: formData.workExperience.map(exp => ({
+        title: exp.jobTitle || '',
+        company: exp.company || '',
+        location: exp.location || '',
+        startDate: exp.startDate || '',
+        endDate: exp.endDate || (exp.currentlyWorking ? 'Present' : ''),
+        description: exp.responsibilities || '',
+      })),
+      education: formData.education.map(edu => ({
+        degree: edu.degree || '',
+        field: edu.fieldOfStudy || '',
+        institution: edu.institution || '',
+        location: edu.location || '',
+        startDate: edu.startDate || '',
+        endDate: edu.endDate || (edu.currentlyStudying ? 'Present' : ''),
+      })),
+      skills: formData.keySkills ? formData.keySkills.split(',').map(skill => skill.trim()) : [],
+    };
+  };
+
   const currentSection = formSteps.find(step => step.id === currentEditSectionId);
 
   return (
@@ -744,7 +871,12 @@ export default function ProfileForm({ user, children }) {
             </p>
           </div>
         </div>
-
+        <ProgressIndicator 
+  currentStep={currentStep} 
+  totalSteps={formSteps.length}
+  formData={formData}
+  formSteps={formSteps}
+/>
         {/* Progress Indicator (only visible in multi-step edit mode) */}
         {isEditMode && !currentEditSectionId && (
             <div className="mb-8">
@@ -814,17 +946,19 @@ export default function ProfileForm({ user, children }) {
                       {formData.workExperience.length === 0 && (
                           <p className="text-gray-500 italic mb-4">No work experience added yet.</p>
                       )}
-                      {formData.workExperience.map((role, roleIndex) => (
-                        <div key={roleIndex} className="space-y-4 border border-gray-200 p-4 rounded-md relative bg-gray-50">
-                          <h3 className="text-lg font-medium text-gray-700 mb-3">Role {roleIndex + 1}</h3>
-                          <InputField label="Job Title" name={`workExperience.${roleIndex}.title`} value={role.title} readOnly={true} />
-                          <InputField label="Company" name={`workExperience.${roleIndex}.company`} value={role.company} readOnly={true} />
-                          <InputField label="Location (City, State)" name={`workExperience.${roleIndex}.location`} value={role.location} readOnly={true} />
+                      {formData.workExperience.map((role, index) => (
+                        <div key={index} className="space-y-4 border border-gray-200 p-4 rounded-md relative bg-gray-50">
+                          <h3 className="text-lg font-medium text-gray-700 mb-3">Role {index + 1}</h3>
+                          <InputField label="Job Title" name={`workExperience.${index}.title`} value={role.title} readOnly={true} />
+                          <InputField label="Company" name={`workExperience.${index}.company`} value={role.company} readOnly={true} />
+                          <InputField label="Location (City, State)" name={`workExperience.${index}.location`} value={role.location} readOnly={true} />
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InputField label="Start Date" name={`workExperience.${roleIndex}.startDate`} type="date" value={role.startDate} readOnly={true} />
-                            <InputField label="End Date" name={`workExperience.${roleIndex}.endDate`} type="date" value={role.endDate} readOnly={true} dateFieldType="work" />
+                            <InputField label="Start Date" name={`workExperience.${index}.startDate`} type="date" value={role.startDate} readOnly={true} />
+                            <div className="flex items-end">
+                              <InputField label="End Date" name={`workExperience.${index}.endDate`} type="date" value={role.endDate} readOnly={true} dateFieldType="work" />
+                            </div>
                           </div>
-                          <TextareaField label="Key Responsibilities / Achievements" name={`workExperience.${roleIndex}.summary`} value={role.summary} rows={4} readOnly={true} />
+                          <TextareaField label="Key Responsibilities / Achievements" name={`workExperience.${index}.summary`} value={role.summary} rows={4} readOnly={true} />
                         </div>
                       ))}
                     </>
@@ -835,18 +969,18 @@ export default function ProfileForm({ user, children }) {
                       {formData.education.length === 0 && (
                           <p className="text-gray-500 italic mb-4">No education entries added yet.</p>
                       )}
-                      {formData.education.map((edu, eduIndex) => (
-                        <div key={eduIndex} className="space-y-4 border border-gray-200 p-4 rounded-md relative bg-gray-50">
-                          <h3 className="text-lg font-medium text-gray-700 mb-3">Education {eduIndex + 1}</h3>
-                          <InputField label="Qualification" name={`education.${eduIndex}.qualification`} value={edu.qualification} readOnly={true} />
-                          <InputField label="Institution Name" name={`education.${eduIndex}.institution`} value={edu.institution} readOnly={true} />
-                          <InputField label="Location (Optional)" name={`education.${eduIndex}.location`} value={edu.location} readOnly={true} />
+                      {formData.education.map((edu, index) => (
+                        <div key={index} className="space-y-4 border border-gray-200 p-4 rounded-md mb-4 relative bg-gray-50">
+                          <h3 className="text-lg font-medium text-gray-700 mb-3">Education {index + 1}</h3>
+                          <InputField label="Qualification" name={`education.${index}.qualification`} value={edu.qualification} readOnly={true} />
+                          <InputField label="Institution Name" name={`education.${index}.institution`} value={edu.institution} readOnly={true} />
+                          <InputField label="Location (Optional)" name={`education.${index}.location`} value={edu.location} readOnly={true} />
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InputField label="Start Date" name={`education.${eduIndex}.startDate`} type="date" value={edu.startDate} readOnly={true} />
+                            <InputField label="Start Date" name={`education.${index}.startDate`} type="date" value={edu.startDate} readOnly={true} />
                             <div className="flex items-end">
                               <InputField 
                                 label="End Date" 
-                                name={`education.${eduIndex}.endDate`} 
+                                name={`education.${index}.endDate`} 
                                 type="date" 
                                 value={edu.endDate} 
                                 readOnly={true} 
@@ -854,12 +988,9 @@ export default function ProfileForm({ user, children }) {
                                 dateFieldType="education" 
                                 max={new Date().toISOString().split('T')[0]} // Prevent future dates
                               />
-                              {edu.endDate === 'Present' && (
-                                <button type="button" onClick={() => {}} className="ml-2 px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Present</button>
-                              )}
                             </div>
                           </div>
-                          <InputField label="Honours / Distinctions (Optional)" name={`education.${eduIndex}.honors`} value={edu.honors} readOnly={true} />
+                          <InputField label="Honours / Distinctions (Optional)" name={`education.${index}.honors`} value={edu.honors} readOnly={true} />
                         </div>
                       ))}
                     </>
@@ -870,12 +1001,12 @@ export default function ProfileForm({ user, children }) {
                       {formData.certifications.length === 0 && (
                           <p className="text-gray-500 italic mb-4">No certifications added yet.</p>
                       )}
-                      {formData.certifications.map((cert, certIndex) => (
-                        <div key={certIndex} className="space-y-4 border border-gray-200 p-4 rounded-md mb-4 relative bg-gray-50">
-                          <h3 className="text-lg font-medium text-gray-700 mb-3">Certification {certIndex + 1}</h3>
-                          <InputField label="Certification Name" name={`certifications.${certIndex}.name`} value={cert.name} readOnly={true} />
-                          <InputField label="Issuer" name={`certifications.${certIndex}.issuer`} value={cert.issuer} readOnly={true} />
-                          <InputField label="Year" name={`certifications.${certIndex}.year`} type="number" value={cert.year} readOnly={true} />
+                      {formData.certifications.map((cert, index) => (
+                        <div key={index} className="space-y-4 border border-gray-200 p-4 rounded-md mb-4 relative bg-gray-50">
+                          <h3 className="text-lg font-medium text-gray-700 mb-3">Certification {index + 1}</h3>
+                          <InputField label="Certification Name" name={`certifications.${index}.name`} value={cert.name} readOnly={true} />
+                          <InputField label="Issuer" name={`certifications.${index}.issuer`} value={cert.issuer} readOnly={true} />
+                          <InputField label="Year" name={`certifications.${index}.year`} type="number" value={cert.year} readOnly={true} />
                         </div>
                       ))}
                     </>
@@ -1040,7 +1171,7 @@ export default function ProfileForm({ user, children }) {
                                   readOnly={!isEditMode || edu.endDate === 'Present'} 
                                   className="flex-grow" 
                                   dateFieldType="education" 
-                                  max={new Date().toISOString().split('T')[0]}
+                                  max={new Date().toISOString().split('T')[0]} // Prevent future dates
                                   placeholder={edu.endDate === 'Present' ? 'Present' : ''}
                                 />
                                 {isEditMode && (
@@ -1351,6 +1482,50 @@ export default function ProfileForm({ user, children }) {
               </div>
               
               <div className="flex items-center space-x-2">
+                {/* Download Resume Button (visible in review mode) */}
+                {isReviewMode && (
+                  <div className="mt-4">
+                    {resumeGenerationStatus.message && (
+                      <div 
+                        className={`mt-2 p-2 rounded text-sm ${
+                          resumeGenerationStatus.success 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {resumeGenerationStatus.message}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleDownloadResume}
+                      disabled={isGeneratingResume}
+                      className={`flex items-center px-4 py-2 rounded-lg transition duration-200 ease-in-out transform hover:scale-105 ${
+                        isGeneratingResume 
+                          ? 'bg-blue-400 cursor-not-allowed' 
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      } text-white`}
+                    >
+                      {isGeneratingResume ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                          </svg>
+                          Download Resume (ATS)
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+                
                 {/* Save Current Section Button (Multi-step, not last step) */}
                 {!currentEditSectionId && isEditMode && currentStep < formSteps.length - 1 && (
                   <button
@@ -1458,7 +1633,6 @@ const SectionWrapper = ({ title, note, children, readOnly, onEdit, showEditButto
     </div>
   </div>
 );
-
 
 // Reusable Form Field Components
 const InputField = ({

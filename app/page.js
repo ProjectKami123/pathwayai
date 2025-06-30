@@ -6,16 +6,16 @@ import { auth } from '../lib/firebase'; // Import shared auth instance
 
 // Updated example questions
 const EXAMPLE_QUESTIONS = [
-  "What are the visa options for software engineers in Australia?",
-  "Tell me about healthcare jobs with good growth potential",
-  "How do I become a cybersecurity specialist in Australia?",
-  "What are the highest paying jobs in the IT sector?",
-  "Can you explain the skilled migration process for nurses?",
-  "Tell me about being a Data Scientist in Australia?",
-  "What's the job market like for Electricians?",
-  "Show me career paths for Civil Engineers",
-  "What skills do I need to be a UX Designer?",
-  "Tell me about salary expectations for Teachers"
+  "What are the best visa pathways for software engineers to Australia?",
+  "How can I break into cybersecurity with my current tech background?", 
+  "Which healthcare roles have the strongest migration prospects?",
+  "What's the fastest path to permanent residency as an engineer?",
+  "Tell me about high-demand skills for Data Scientists in Australia",
+  "How much can I earn as a UX Designer in Sydney or Melbourne?",
+  "What certifications boost my chances for skilled migration?",
+  "Show me career progression paths for Civil Engineers",
+  "Which tech skills are most valued by Australian employers?",
+  "How do I optimize my profile for Australian job applications?"
 ];
 
 
@@ -24,7 +24,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Hi there! I\'m your AI career advisor. Ask me anything about jobs, careers, or working in Australia.'
+      content: '🚀 Welcome to PathwayAI! I\'m your intelligent career strategist. Ask me anything about Australian jobs, visa pathways, skill requirements, or career optimization strategies.'
     }
   ]);
   const [input, setInput] = useState('');
@@ -197,25 +197,12 @@ export default function ChatPage() {
                   type="button"
                   onClick={handleDiceClick}
                   className="flex items-center text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
-                  title="Random occupation"
+                  title="Get career inspiration"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M11.17 6.764l.528-1.554h.161c.532 0 .954.227 1.141.563.145.266.195.466.195.756 0 .453-.268.792-.81.792h-1.214v-1.559z" />
-                    <path d="M4.5 3h11c.563 0 1.017.476 1.017 1.063 0 .586-.454 1.062-1.017 1.062h-11c-.563 0-1.017-.476-1.017-1.062 0-.587.454-1.063 1.017-1.063z" />
-                    <path d="M6.5 5a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M5.5 10.5a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M17.5 14.5a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M14.5 18.5a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M8.5 16.5a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M3.5 12.5a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M11.5 8.5a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M15.5 12.5a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M12.5 16.5a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M6.5 18.5a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M2.5 14.5a1 1 0 100-2 1 1 0 000 2z" />
-                    <path d="M8.5 8.5a1 1 0 100-2 1 1 0 000 2z" />
+                    <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
                   </svg>
-                  Random Job
+                  Inspire Me
                 </button>
               </div>
             </form>
