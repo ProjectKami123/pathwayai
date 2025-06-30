@@ -74,7 +74,7 @@ export const useFormValidation = () => {
     
     // Handle array of validators
     return validators.composeValidators(...validator)(value, formData, fieldPath);
-  }, [formData]);
+  }, [formData, fieldValidators]);
 
   /**
    * Validate all fields in the form

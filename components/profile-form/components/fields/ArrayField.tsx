@@ -229,7 +229,7 @@ function ArrayField<T>({
                 index,
                 onRemove: () => handleRemoveItem(index),
                 readOnly,
-                error: error?.[index],
+                error: (error as Record<number, FieldError>)?.[index],
               })}
               
               {!readOnly && !disabled && canRemove && (

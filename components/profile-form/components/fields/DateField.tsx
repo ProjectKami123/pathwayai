@@ -2,7 +2,7 @@
 
 import React, { InputHTMLAttributes, forwardRef, useMemo, useState } from 'react';
 import { FieldError } from 'react-hook-form';
-import { formatDate, formatDateForInput } from '../utils/formatters';
+import { formatDate, formatDateForInput } from '../../utils/formatters';
 
 export interface DateFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'> {
   /**
@@ -101,7 +101,7 @@ const DateField = forwardRef<HTMLInputElement, DateFieldProps>(({
   const fieldId = id || React.useId();
   const errorId = `${fieldId}-error`;
   const descriptionId = `${fieldId}-description`;
-  const isToggled = toggleOption && value === toggleOption;
+  const isToggled = !!(toggleOption && value === toggleOption);
 
   // Format the date for display in read-only mode
   const formattedDate = useMemo(() => {

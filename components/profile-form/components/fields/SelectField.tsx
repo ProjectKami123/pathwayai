@@ -100,7 +100,8 @@ const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(({
   ...props
 }, ref) => {
   // Generate a unique ID if none is provided
-  const selectId = id || React.useId();
+  const generatedId = React.useId();
+  const selectId = id || generatedId;
   const errorId = `${selectId}-error`;
   const descriptionId = `${selectId}-description`;
 
@@ -138,7 +139,6 @@ const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(({
   
   // Read-only and disabled states
   const readOnlyClasses = readOnly ? 'bg-gray-50 text-gray-500' : 'bg-white';
-  const disabledClasses = disabled ? 'cursor-not-allowed opacity-50' : '';
 
   // Combine all select classes
   const selectClasses = [

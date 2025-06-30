@@ -1,7 +1,6 @@
 import React from 'react';
 import { useProfileForm } from '../../form-context/ProfileFormContext';
-import { InputField } from '../fields/InputField';
-import { Button } from '../../ui/Button';
+import InputField from '../fields/InputField';
 import { Plus, Trash2 } from 'lucide-react';
 
 type Certification = {
@@ -15,13 +14,12 @@ const CertificationsSection: React.FC = () => {
   const { 
     formData, 
     errors, 
-    handleArrayChange,
-    isReadOnly,
+    updateField,
   } = useProfileForm();
 
   // Initialize certifications from formData or with one empty entry
-  const certifications: Certification[] = formData.certifications?.length 
-    ? formData.certifications 
+  const certifications: Certification[] = (formData.certifications as Certification[])?.length 
+    ? (formData.certifications as Certification[])
     : [{ 
         id: Date.now().toString(), 
         name: '', 
@@ -36,19 +34,19 @@ const CertificationsSection: React.FC = () => {
       issuer: '',
       year: new Date().getFullYear().toString()
     };
-    handleArrayChange('certifications', [...certifications, newCertification]);
+    updateField('certifications', [...certifications, newCertification]);
   };
 
   const handleRemoveCertification = (id: string) => {
     if (certifications.length <= 1) return;
-    handleArrayChange('certifications', certifications.filter(cert => cert.id !== id));
+    updateField('certifications', certifications.filter(cert => cert.id !== id));
   };
 
   const handleCertificationChange = (id: string, field: keyof Certification, value: string) => {
     const updatedCertifications = certifications.map(cert => 
       cert.id === id ? { ...cert, [field]: value } : cert
     );
-    handleArrayChange('certifications', updatedCertifications);
+    updateField('certifications', updatedCertifications);
   };
 
   // Validate year input to ensure it's a 4-digit number
@@ -63,22 +61,20 @@ const CertificationsSection: React.FC = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Certifications</h3>
-        {!isReadOnly && certifications.length < 10 && (
-          <Button
+        {certifications.length < 10 && (
+          <button
             type="button"
-            variant="outline"
-            size="sm"
             onClick={handleAddCertification}
-            className="text-sm"
+            className="text-sm px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
           >
             <Plus className="h-4 w-4 mr-1" /> Add Certification
-          </Button>
+          </button>
         )}
       </div>
 
       {certifications.map((cert, index) => (
         <div key={cert.id} className="border border-gray-200 rounded-lg p-6 relative">
-          {certifications.length > 1 && !isReadOnly && (
+          {certifications.length > 1 && (
             <button
               type="button"
               onClick={() => handleRemoveCertification(cert.id)}
@@ -99,7 +95,7 @@ const CertificationsSection: React.FC = () => {
                 error={errors[`certifications[${index}].name`]}
                 placeholder="E.g., AWS Certified Solutions Architect"
                 required
-                readOnly={isReadOnly}
+                readOnly={false}
               />
             </div>
             <InputField
@@ -110,7 +106,7 @@ const CertificationsSection: React.FC = () => {
               error={errors[`certifications[${index}].issuer`]}
               placeholder="E.g., Amazon Web Services"
               required
-              readOnly={isReadOnly}
+              readOnly={false}
             />
             <InputField
               label="Year Obtained"
@@ -132,7 +128,7 @@ const CertificationsSection: React.FC = () => {
               placeholder="YYYY"
               maxLength={4}
               required
-              readOnly={isReadOnly}
+              readOnly={false}
             />
           </div>
         </div>

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(rg:*)",
       "Bash(npm run build:*)",
-      "Bash(npx next lint:*)"
+      "Bash(npx next lint:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }

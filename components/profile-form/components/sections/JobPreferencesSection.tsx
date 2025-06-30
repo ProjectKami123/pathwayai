@@ -45,12 +45,13 @@ export const JobPreferencesSection: React.FC<JobPreferencesSectionProps> = ({
   } = useFormContext<JobPreferencesData>();
 
   // Ensure preferredJobTitles is always an array
+  const watchedJobTitles = watch('preferredJobTitles');
   const preferredJobTitles = useMemo(() => {
-    const value = watch('preferredJobTitles') || defaultValues.preferredJobTitles;
+    const value = watchedJobTitles || defaultValues.preferredJobTitles;
     if (!value) return [];
     if (Array.isArray(value)) return value;
     return value.split(',').map(s => s.trim()).filter(Boolean);
-  }, [watch('preferredJobTitles'), defaultValues.preferredJobTitles]);
+  }, [watchedJobTitles, defaultValues.preferredJobTitles]);
 
   const handleJobTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if ((e.key === 'Enter' || e.key === ',') && jobTitleInput.trim()) {

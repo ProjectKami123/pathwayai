@@ -193,7 +193,7 @@ export const get = (obj, path, defaultValue = '') => {
   return result ?? defaultValue;
 };
 
-export default {
+const formatters = {
   commaStringToArray,
   arrayToCommaString,
   newlineStringToArray,
@@ -207,3 +207,5 @@ export default {
   toTitleCase,
   get
 };
+
+export default formatters;
