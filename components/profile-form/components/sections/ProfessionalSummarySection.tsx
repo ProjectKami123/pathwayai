@@ -108,7 +108,7 @@ const ProfessionalSummarySection: React.FC = () => {
             </button>
           </div>
           <p className="text-xs text-gray-500 mb-2">
-            Think of this as your 30-second elevator pitch. In 3-4 sentences, introduce your professional role, years of experience, 2-3 key achievements, and career aspirations. Tailor this for the jobs you're applying for.
+            Think of this as your 30-second elevator pitch. In 3-4 sentences, introduce your professional role, years of experience, 2-3 key achievements, and career aspirations. Tailor this for the jobs you&apos;re applying for.
           </p>
           <TextareaField
             name="professionalSummary"

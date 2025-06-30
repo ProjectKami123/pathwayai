@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { useProfileForm } from '../../form-context/ProfileFormContext';
-import { InputField } from '../fields/InputField';
 import { TextareaField } from '../fields/TextareaField';
 import { X } from 'lucide-react';
 import { Chip } from '@mui/material';
@@ -187,7 +186,7 @@ const OptionalExtrasSection: React.FC = () => {
             </label>
           </div>
           <p className="mt-2 text-sm text-gray-500">
-            Check this box if you're open to relocating for the right opportunity.
+            Check this box if you&apos;re open to relocating for the right opportunity.
           </p>
           {errors.willingToRelocate && (
             <p className="mt-1 text-sm text-red-600">{errors.willingToRelocate}</p>

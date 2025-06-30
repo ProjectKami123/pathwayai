@@ -74,7 +74,8 @@ const TextareaField = forwardRef<HTMLTextAreaElement, TextareaFieldProps>(({
   ...props
 }, ref) => {
   // Generate a unique ID if none is provided
-  const textareaId = id || React.useId();
+  const generatedId = React.useId();
+  const textareaId = id || generatedId;
   const errorId = `${textareaId}-error`;
   const descriptionId = `${textareaId}-description`;
 
@@ -88,7 +89,6 @@ const TextareaField = forwardRef<HTMLTextAreaElement, TextareaFieldProps>(({
   
   // Read-only and disabled states
   const readOnlyClasses = readOnly ? 'bg-gray-50 text-gray-500' : 'bg-white';
-  const disabledClasses = disabled ? 'cursor-not-allowed opacity-50' : '';
 
   // Combine all textarea classes
   const textareaClasses = [

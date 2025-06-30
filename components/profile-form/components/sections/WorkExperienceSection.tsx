@@ -30,7 +30,6 @@ const WorkExperienceSection: React.FC = () => {
   const { 
     formData, 
     errors, 
-    handleChange: formHandleChange,
     handleArrayChange,
     isReadOnly,
     toggleEditMode
