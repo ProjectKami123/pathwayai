@@ -2,8 +2,6 @@
 
 // Type checking helpers
 const isString = (value) => typeof value === 'string';
-const isNumber = (value) => !isNaN(parseInt(value)) && isFinite(value);
-const isDate = (value) => !isNaN(Date.parse(value));
 const currentYear = new Date().getFullYear();
 
 // Field-level validation functions

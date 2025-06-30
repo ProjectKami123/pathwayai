@@ -117,10 +117,10 @@ export interface FormFieldValidation {
   minLength?: number;
   maxLength?: number;
   pattern?: RegExp;
-  validate?: (value: any) => boolean | string;
+  validate?: (value: unknown) => boolean | string;
 }
 
-export interface FormField<T = any> {
+export interface FormField<T = unknown> {
   name: string;
   label: string;
   type: 'text' | 'email' | 'password' | 'select' | 'checkbox' | 'radio' | 'date' | 'textarea' | 'tel';
@@ -133,13 +133,13 @@ export interface FormField<T = any> {
 }
 
 // API response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: {
     code: string;
     message: string;
-    details?: any;
+    details?: unknown;
   };
   timestamp: string;
 }

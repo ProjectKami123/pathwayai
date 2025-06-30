@@ -22,8 +22,8 @@ export const useFormNavigation = () => {
     return stepIndex;
   }, []);
 
-  // Go to next step with optional step data
-  const goToNextStep = useCallback((stepData = {}) => {
+  // Go to next step
+  const goToNextStep = useCallback(() => {
     // TODO: Add step validation here if needed
     nextStep();
   }, [nextStep]);
@@ -35,7 +35,7 @@ export const useFormNavigation = () => {
   }, [prevStep]);
 
   // Check if a step is complete
-  const isStepComplete = useCallback((stepIndex) => {
+  const isStepComplete = useCallback(() => {
     // TODO: Implement step completion logic
     // This could check if required fields for the step are filled
     return false;

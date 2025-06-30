@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { UserProfile, Education, WorkExperience, Skill, Certification, Address } from '@/types/form.types';
+import { UserProfile } from '@/types/form.types';
 
 type FormField = keyof Omit<UserProfile, 'uid' | 'email' | 'emailVerified' | 'phoneVerified' | 'createdAt' | 'updatedAt' | 'preferences'>;
 type ArrayField = 'education' | 'workExperience' | 'skills' | 'certifications' | 'addresses';
@@ -69,7 +69,7 @@ export const ProfileFormProvider: React.FC<ProfileFormProviderProps> = ({
     setFormData(prev => ({
       ...prev,
       [field]: [
-        ...(prev[field] || []) as any[],
+        ...(prev[field] || []) as unknown[],
         { ...item, id: Date.now().toString() }
       ]
     }));
@@ -83,7 +83,7 @@ export const ProfileFormProvider: React.FC<ProfileFormProviderProps> = ({
   ) => {
     setFormData(prev => ({
       ...prev,
-      [field]: (prev[field] as any[])?.map(item => 
+      [field]: (prev[field] as unknown[])?.map(item => 
         item.id === id ? { ...item, ...updates } : item
       ) || []
     }));
@@ -93,7 +93,7 @@ export const ProfileFormProvider: React.FC<ProfileFormProviderProps> = ({
   const removeItem = useCallback((field: ArrayField, id: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: (prev[field] as any[])?.filter(item => item.id !== id) || []
+      [field]: (prev[field] as unknown[])?.filter(item => item.id !== id) || []
     }));
   }, []);
 
