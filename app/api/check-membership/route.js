@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { checkMembershipAvailability, addToWaitlist } from '@/lib/rateLimiter';
 
-export async function GET(request) {
+export async function GET() {
   try {
     const membershipStatus = await checkMembershipAvailability();
     return NextResponse.json(membershipStatus);

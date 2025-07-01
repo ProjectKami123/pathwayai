@@ -39,7 +39,7 @@ export default function MembershipGate({ onClose }) {
       } else {
         alert('Failed to join waitlist. Please try again.');
       }
-    } catch (error) {
+    } catch {
       alert('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -65,10 +65,10 @@ export default function MembershipGate({ onClose }) {
             </div>
             
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              You're In!
+              You&apos;re In!
             </h2>
             <p className="text-gray-600">
-              You'll be the first to know when we open more spots. Keep an eye on your inbox for exclusive early access.
+              You&apos;ll be the first to know when we open more spots. Keep an eye on your inbox for exclusive early access.
             </p>
           </div>
           
@@ -120,7 +120,7 @@ export default function MembershipGate({ onClose }) {
             </div>
             
             <p className="text-gray-700 leading-relaxed mb-6">
-              We've reached our exclusive limit of <strong>100 founding members</strong> who get lifetime access to our premium AI-powered career optimization platform.
+              We&apos;ve reached our exclusive limit of <strong>100 founding members</strong> who get lifetime access to our premium AI-powered career optimization platform.
             </p>
             
             <div className="bg-gray-50 rounded-xl p-6 mb-6">
@@ -187,7 +187,7 @@ export default function MembershipGate({ onClose }) {
             </form>
             
             <p className="text-xs text-gray-500 text-center mt-4">
-              When we're full, we're full. No exceptions. Join the waitlist for priority access when spots open.
+              When we&apos;re full, we&apos;re full. No exceptions. Join the waitlist for priority access when spots open.
             </p>
           </div>
         </div>

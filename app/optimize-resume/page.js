@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import SidePanel from '../../components/sidepanel';
@@ -9,7 +8,6 @@ import AuthModal from '../../components/AuthModal';
 import AuthForm from '../../components/AuthForm';
 
 export default function OptimizeResumePage() {
-  const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -112,7 +110,7 @@ export default function OptimizeResumePage() {
               🎯 ATS Resume Optimizer
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
-              Paste any job description and we'll intelligently optimize your resume to beat Applicant Tracking Systems (ATS) and land more interviews.
+              Paste any job description and we&apos;ll intelligently optimize your resume to beat Applicant Tracking Systems (ATS) and land more interviews.
             </p>
             
             {usage && (
@@ -322,7 +320,7 @@ The more detailed the job description, the better we can optimize your resume!"
                 Sign In to Optimize Your Resume
               </h2>
               <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                Join thousands of professionals who've already optimized their resumes for ATS success. Create your account to get started.
+                Join thousands of professionals who&apos;ve already optimized their resumes for ATS success. Create your account to get started.
               </p>
               <button
                 onClick={() => setIsAuthModalOpen(true)}
