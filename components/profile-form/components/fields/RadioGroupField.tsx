@@ -95,14 +95,14 @@ const RadioGroupField = forwardRef<HTMLInputElement, RadioGroupFieldProps>(({
   errorClassName = '',
   descriptionClassName = '',
   id,
-  className = '',
   readOnly = false,
   disabled = false,
   layout = 'vertical',
   ...props
 }, ref) => {
   // Generate a unique ID if none is provided
-  const groupId = id || React.useId();
+  const generatedId = React.useId();
+  const groupId = id || generatedId;
   const errorId = `${groupId}-error`;
   const descriptionId = `${groupId}-description`;
 

@@ -70,7 +70,8 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({
   ...props
 }, ref) => {
   // Generate a unique ID if none is provided
-  const inputId = id || React.useId();
+  const generatedId = React.useId();
+  const inputId = id || generatedId;
   const errorId = `${inputId}-error`;
   const descriptionId = `${inputId}-description`;
 
@@ -84,7 +85,6 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({
   
   // Read-only and disabled states
   const readOnlyClasses = readOnly ? 'bg-gray-50 text-gray-500' : 'bg-white';
-  const disabledClasses = disabled ? 'cursor-not-allowed opacity-50' : '';
 
   // Combine all input classes
   const inputClasses = [

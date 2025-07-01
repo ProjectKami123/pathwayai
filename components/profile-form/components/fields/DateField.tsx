@@ -1,6 +1,6 @@
 
 
-import React, { InputHTMLAttributes, forwardRef, useMemo, useState } from 'react';
+import React, { InputHTMLAttributes, forwardRef, useMemo } from 'react';
 import { FieldError } from 'react-hook-form';
 import { formatDate, formatDateForInput } from '../../utils/formatters';
 
@@ -98,7 +98,8 @@ const DateField = forwardRef<HTMLInputElement, DateFieldProps>(({
   ...props
 }, ref) => {
   // Generate a unique ID if none is provided
-  const fieldId = id || React.useId();
+  const generatedId = React.useId();
+  const fieldId = id || generatedId;
   const errorId = `${fieldId}-error`;
   const descriptionId = `${fieldId}-description`;
   const isToggled = !!(toggleOption && value === toggleOption);
@@ -143,7 +144,6 @@ const DateField = forwardRef<HTMLInputElement, DateFieldProps>(({
   
   // Disabled and read-only states
   const readOnlyClasses = readOnly ? 'bg-gray-50 cursor-default' : '';
-  const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : '';
 
   // Input classes
   const inputClasses = [

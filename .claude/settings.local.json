@@ -4,7 +4,10 @@
       "Bash(rg:*)",
       "Bash(npm run build:*)",
       "Bash(npx next lint:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx eslint:*)",
+      "Bash(timeout 60 npm run build)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }
